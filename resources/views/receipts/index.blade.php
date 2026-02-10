@@ -81,7 +81,5 @@
         </div>
     </div>
 
-    @if($receipts->hasPages())
-        <div class="mt-3">{{ $receipts->withQueryString()->links() }}</div>
-    @endif
+
 @endsection

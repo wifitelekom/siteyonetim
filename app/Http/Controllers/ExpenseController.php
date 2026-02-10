@@ -48,7 +48,7 @@ class ExpenseController extends Controller
             $query->where('vendor_id', $user->vendor->id);
         }
 
-        $expenses = $query->orderByDesc('expense_date')->paginate(25)->withQueryString();
+        $expenses = $query->orderByDesc('expense_date')->get();
         $vendors = Vendor::where('is_active', true)->orderBy('name')->get();
 
         return view('expenses.index', compact('expenses', 'vendors'));

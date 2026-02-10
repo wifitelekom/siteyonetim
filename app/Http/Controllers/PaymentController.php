@@ -29,7 +29,7 @@ class PaymentController extends Controller
             $query->where('vendor_id', $user->vendor->id);
         }
 
-        $payments = $query->orderByDesc('paid_at')->paginate(25)->withQueryString();
+        $payments = $query->orderByDesc('paid_at')->get();
         $vendors = Vendor::where('is_active', true)->orderBy('name')->get();
 
         return view('payments.index', compact('payments', 'vendors'));

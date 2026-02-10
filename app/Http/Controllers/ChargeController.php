@@ -50,7 +50,7 @@ class ChargeController extends Controller
             $query->whereIn('apartment_id', $user->apartment_ids);
         }
 
-        $charges = $query->orderByDesc('due_date')->paginate(25)->withQueryString();
+        $charges = $query->orderByDesc('due_date')->get();
         $apartments = Apartment::where('is_active', true)->orderBy('block')->orderBy('number')->get();
 
         return view('charges.index', compact('charges', 'apartments'));

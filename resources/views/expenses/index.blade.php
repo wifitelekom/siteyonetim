@@ -86,6 +86,6 @@
             </table>
         </div>
     </div>
-    @if($expenses->hasPages())
-    <div class="mt-3">{{ $expenses->withQueryString()->links() }}</div>@endif
+
+
 @endsection

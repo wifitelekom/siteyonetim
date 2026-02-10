@@ -30,7 +30,7 @@ class ReceiptController extends Controller
             $query->whereIn('apartment_id', $user->apartment_ids);
         }
 
-        $receipts = $query->orderByDesc('paid_at')->paginate(25)->withQueryString();
+        $receipts = $query->orderByDesc('paid_at')->get();
         $apartments = Apartment::where('is_active', true)->orderBy('block')->orderBy('number')->get();
 
         return view('receipts.index', compact('receipts', 'apartments'));

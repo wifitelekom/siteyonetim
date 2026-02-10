@@ -231,13 +231,15 @@ document.addEventListener('DOMContentLoaded', function () {
         new DataTable(table, {
             searchable: true,
             sortable: true,
-            perPage: 15,
-            perPageSelect: [10, 15, 25, 50],
+            paging: true,
+            perPage: 50,
+            perPageSelect: [25, 50, 100],
             labels: {
                 placeholder: 'Ara...',
-                perPage: '{select} kayıt',
+                perPage: 'Sayfa başına {select} kayıt',
                 noRows: 'Kayıt bulunamadı',
-                info: '{start} - {end} / {rows} kayıt',
+                noResults: 'Aramanızla eşleşen kayıt yok',
+                info: '{rows} kayıttan {start} - {end} arası gösteriliyor',
             },
         });
     });
