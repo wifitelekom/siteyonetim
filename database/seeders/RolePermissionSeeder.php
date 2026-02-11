@@ -10,10 +10,11 @@ class RolePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Reset cached roles and permissions
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
 
         $permissions = [
+            // Sites (super admin)
+            'sites.manage',
             // Charges
             'charges.view', 'charges.create', 'charges.collect', 'charges.delete',
             // Expenses
@@ -39,29 +40,28 @@ class RolePermissionSeeder extends Seeder
         ];
 
         foreach ($permissions as $permission) {
-            Permission::create(['name' => $permission]);
+            Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Admin - tüm yetkiler
-        $admin = Role::create(['name' => 'admin']);
-        $admin->givePermissionTo(Permission::all());
+        $superAdmin = Role::firstOrCreate(['name' => 'super-admin']);
+        $superAdmin->givePermissionTo(Permission::all());
 
-        // Owner - sınırlı yetkiler
-        $owner = Role::create(['name' => 'owner']);
+        $admin = Role::firstOrCreate(['name' => 'admin']);
+        $admin->givePermissionTo(Permission::all()->where('name', '!=', 'sites.manage'));
+
+        $owner = Role::firstOrCreate(['name' => 'owner']);
         $owner->givePermissionTo([
             'charges.view',
             'receipts.view', 'receipts.print',
         ]);
 
-        // Tenant - sınırlı yetkiler
-        $tenant = Role::create(['name' => 'tenant']);
+        $tenant = Role::firstOrCreate(['name' => 'tenant']);
         $tenant->givePermissionTo([
             'charges.view',
             'receipts.view',
         ]);
 
-        // Vendor - sadece kendi gider/ödemelerini görür
-        $vendor = Role::create(['name' => 'vendor']);
+        $vendor = Role::firstOrCreate(['name' => 'vendor']);
         $vendor->givePermissionTo([
             'expenses.view',
             'payments.view',

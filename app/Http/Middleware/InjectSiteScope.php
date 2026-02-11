@@ -10,10 +10,11 @@ class InjectSiteScope
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (auth()->check() && !auth()->user()->site_id) {
+        if (auth()->check() && !auth()->user()->site_id && !auth()->user()->hasRole('super-admin')) {
             abort(403, 'Kullanıcı bir siteye atanmamış.');
         }
 
         return $next($request);
     }
 }
+

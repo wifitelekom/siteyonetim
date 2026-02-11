@@ -1,304 +1,259 @@
 @extends('layouts.app')
-@section('title', 'Genel Bakış')
+@section('title', 'Genel Bakis')
+
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0 fw-bold" style="color: var(--sy-text);">Genel Bakış</h4>
-        <div class="text-muted small">{{ now()->translatedFormat('d F Y, H:i') }}</div>
+    @php
+        $paidAmount = $receivables['total'] - ($receivables['not_due'] + $receivables['due_today'] + $receivables['overdue']);
+        $pendingAmount = $receivables['not_due'] + $receivables['due_today'] + $receivables['overdue'];
+    @endphp
+
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 class="sy-page-title">Genel Bakis</h1>
+        <span class="text-sm font-medium text-slate-500">{{ now()->translatedFormat('d F Y, H:i') }}</span>
     </div>
 
-    <div class="row g-3 dashboard-grid">
-        {{-- Donut: Tahsil Edilecekler --}}
-        <div class="col-lg-4 col-md-6">
-            <div class="card h-100">
-                <div class="donut-card">
-                    <div class="donut-header">Tahsil Edilecekler</div>
-                    <div class="donut-wrapper">
-                        <canvas id="receivablesChart" width="160" height="160"></canvas>
-                        <div class="donut-legend">
-                            <div class="legend-item">
-                                <span class="legend-dot" style="background: #818cf8;"></span>
-                                <span class="legend-label">Vadesi Gelmemiş</span>
-                                <span class="legend-value">{{ number_format($receivables['not_due'], 2, ',', '.') }}
-                                    ₺</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-dot" style="background: #f59e0b;"></span>
-                                <span class="legend-label">Bugün</span>
-                                <span class="legend-value">{{ number_format($receivables['due_today'], 2, ',', '.') }}
-                                    ₺</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-dot" style="background: #ef4444;"></span>
-                                <span class="legend-label">Geciken</span>
-                                <span class="legend-value">{{ number_format($receivables['overdue'], 2, ',', '.') }}
-                                    ₺</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="donut-total">
-                        <div class="total-value">{{ number_format($receivables['total'], 2, ',', '.') }} ₺</div>
-                        <div class="total-label">{{ $receivables['count'] ?? 0 }} Hesap</div>
-                    </div>
-                </div>
+    <div class="mb-6 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div class="sy-card p-6">
+            <div class="mb-4 flex items-center gap-3">
+                <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+                    <span class="material-symbols-outlined">payments</span>
+                </span>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Toplam Aidat</p>
             </div>
+            <p class="text-3xl font-bold text-slate-800 text-tabular">{{ number_format($receivables['total'], 2, ',', '.') }} TL</p>
         </div>
 
-        {{-- Donut: Ödenecekler --}}
-        <div class="col-lg-4 col-md-6">
-            <div class="card h-100">
-                <div class="donut-card">
-                    <div class="donut-header">Ödenecekler</div>
-                    <div class="donut-wrapper">
-                        <canvas id="payablesChart" width="160" height="160"></canvas>
-                        <div class="donut-legend">
-                            <div class="legend-item">
-                                <span class="legend-dot" style="background: #818cf8;"></span>
-                                <span class="legend-label">Vadesi Gelmemiş</span>
-                                <span class="legend-value">{{ number_format($payables['not_due'], 2, ',', '.') }} ₺</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-dot" style="background: #f59e0b;"></span>
-                                <span class="legend-label">Bugün Ödenecek</span>
-                                <span class="legend-value">{{ number_format($payables['due_today'], 2, ',', '.') }} ₺</span>
-                            </div>
-                            <div class="legend-item">
-                                <span class="legend-dot" style="background: #ef4444;"></span>
-                                <span class="legend-label">Geciken</span>
-                                <span class="legend-value">{{ number_format($payables['overdue'], 2, ',', '.') }} ₺</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="donut-total">
-                        <div class="total-value">{{ number_format($payables['total'], 2, ',', '.') }} ₺</div>
-                        <div class="total-label">{{ $payables['vendor_count'] ?? 0 }} Tedarikçi</div>
-                    </div>
-                </div>
+        <div class="sy-card p-6">
+            <div class="mb-4 flex items-center gap-3">
+                <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                    <span class="material-symbols-outlined">check_circle</span>
+                </span>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Odenen</p>
             </div>
+            <p class="text-3xl font-bold text-slate-800 text-tabular">{{ number_format($paidAmount, 2, ',', '.') }} TL</p>
         </div>
 
-        {{-- Timeline Panel --}}
-        <div class="col-lg-4">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>Yaklaşan İşlemler</span>
-                    <span class="badge bg-primary rounded-pill">{{ $timeline->count() }}</span>
-                </div>
-                <div class="card-body py-2 timeline-panel" style="max-height: 380px; overflow-y: auto;">
-                    @php $lastDate = ''; @endphp
-                    @forelse($timeline as $item)
-                        @if($item['date'] !== $lastDate)
-                            <div class="timeline-date-header">
-                                @php
-                                    $d = \Carbon\Carbon::parse($item['date']);
-                                    if ($d->isToday())
-                                        echo 'BUGÜN / ' . $d->translatedFormat('d F Y');
-                                    elseif ($d->isYesterday())
-                                        echo 'DÜN';
-                                    elseif ($d->isTomorrow())
-                                        echo 'YARIN';
-                                    else
-                                        echo $d->diffForHumans() . ' / ' . $d->translatedFormat('d F');
-                                @endphp
-                            </div>
-                            @php $lastDate = $item['date']; @endphp
-                        @endif
-                        <div class="timeline-item">
-                            <span class="timeline-dot {{ $item['dot_class'] }}"></span>
-                            <div class="timeline-content">
-                                <div class="timeline-title">{{ $item['title'] }}</div>
-                                <div class="timeline-subtitle">{{ $item['subtitle'] }}</div>
-                            </div>
-                            <span class="timeline-amount">{{ $item['amount'] }}</span>
-                        </div>
-                    @empty
-                        <div class="text-center text-muted py-4">
-                            <i class="bi bi-calendar-check fs-2 d-block mb-2"></i>
-                            Yaklaşan işlem yok
-                        </div>
-                    @endforelse
-                </div>
+        <div class="sy-card p-6">
+            <div class="mb-4 flex items-center gap-3">
+                <span class="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                    <span class="material-symbols-outlined">schedule</span>
+                </span>
+                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Bekleyen</p>
             </div>
+            <p class="text-3xl font-bold text-slate-800 text-tabular">{{ number_format($pendingAmount, 2, ',', '.') }} TL</p>
         </div>
     </div>
 
-    {{-- Counter Cards Row --}}
-    <div class="row g-3 mt-1 dashboard-grid">
-        <div class="col-lg-3 col-md-6">
-            <div class="stat-card-mini">
-                <div class="stat-icon bg-accent"><i class="bi bi-arrow-repeat"></i></div>
-                <div class="stat-content">
-                    <div class="stat-value">{{ $aidatTemplates }}/{{ $aidatTemplatesTotal }}</div>
-                    <div class="stat-label">Aidat Şablonu</div>
+    <div class="mb-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <section class="sy-card p-6">
+            <h2 class="mb-4 text-lg font-semibold text-slate-800">Tahsil Edilecekler</h2>
+            <div class="mx-auto mb-4 h-44 w-44">
+                <canvas id="receivablesChart"></canvas>
+            </div>
+            <div class="space-y-2 text-sm">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-slate-500">
+                        <span class="h-2.5 w-2.5 rounded-full bg-indigo-400"></span>
+                        <span>Vadesi Gelmemis</span>
+                    </div>
+                    <span class="font-semibold text-tabular text-slate-700">{{ number_format($receivables['not_due'], 2, ',', '.') }} TL</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-slate-500">
+                        <span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+                        <span>Bugun</span>
+                    </div>
+                    <span class="font-semibold text-tabular text-slate-700">{{ number_format($receivables['due_today'], 2, ',', '.') }} TL</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-slate-500">
+                        <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                        <span>Geciken</span>
+                    </div>
+                    <span class="font-semibold text-tabular text-slate-700">{{ number_format($receivables['overdue'], 2, ',', '.') }} TL</span>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="stat-card-mini">
-                <div class="stat-icon bg-warning-soft"><i class="bi bi-calendar-event"></i></div>
-                <div class="stat-content">
-                    <div class="stat-value">{{ $expenseTemplates }}/{{ $expenseTemplatesTotal }}</div>
-                    <div class="stat-label">Gider Şablonu</div>
+            <div class="mt-4 border-t border-slate-200 pt-4">
+                <p class="text-xs uppercase tracking-wider text-slate-400">Toplam</p>
+                <p class="mt-1 text-lg font-semibold text-primary-700 text-tabular">{{ number_format($receivables['total'], 2, ',', '.') }} TL</p>
+            </div>
+        </section>
+
+        <section class="sy-card p-6">
+            <h2 class="mb-4 text-lg font-semibold text-slate-800">Odenecekler</h2>
+            <div class="mx-auto mb-4 h-44 w-44">
+                <canvas id="payablesChart"></canvas>
+            </div>
+            <div class="space-y-2 text-sm">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-slate-500">
+                        <span class="h-2.5 w-2.5 rounded-full bg-indigo-400"></span>
+                        <span>Vadesi Gelmemis</span>
+                    </div>
+                    <span class="font-semibold text-tabular text-slate-700">{{ number_format($payables['not_due'], 2, ',', '.') }} TL</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-slate-500">
+                        <span class="h-2.5 w-2.5 rounded-full bg-amber-500"></span>
+                        <span>Bugun</span>
+                    </div>
+                    <span class="font-semibold text-tabular text-slate-700">{{ number_format($payables['due_today'], 2, ',', '.') }} TL</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2 text-slate-500">
+                        <span class="h-2.5 w-2.5 rounded-full bg-red-500"></span>
+                        <span>Geciken</span>
+                    </div>
+                    <span class="font-semibold text-tabular text-slate-700">{{ number_format($payables['overdue'], 2, ',', '.') }} TL</span>
                 </div>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="stat-card-mini">
-                <div class="stat-icon bg-success-soft"><i class="bi bi-receipt"></i></div>
-                <div class="stat-content">
-                    <div class="stat-value">{{ $monthlyReceiptCount }}</div>
-                    <div class="stat-label">Bu Ay Makbuz</div>
-                </div>
+            <div class="mt-4 border-t border-slate-200 pt-4">
+                <p class="text-xs uppercase tracking-wider text-slate-400">Toplam</p>
+                <p class="mt-1 text-lg font-semibold text-red-600 text-tabular">{{ number_format($payables['total'], 2, ',', '.') }} TL</p>
             </div>
-        </div>
-        <div class="col-lg-3 col-md-6">
-            <div class="stat-card-mini">
-                <div class="stat-icon bg-info-soft"><i class="bi bi-bank2"></i></div>
-                <div class="stat-content">
-                    <div class="stat-value">{{ number_format($totalCash, 0, ',', '.') }} ₺</div>
-                    <div class="stat-label">Toplam Bakiye</div>
-                </div>
+        </section>
+
+        <section class="sy-card p-6">
+            <div class="mb-4 flex items-center justify-between">
+                <h2 class="text-lg font-semibold text-slate-800">Yaklasan Islemler</h2>
+                <span class="rounded-md bg-primary-50 px-2 py-1 text-xs font-semibold text-primary-700">{{ $timeline->count() }}</span>
             </div>
-        </div>
+            <div class="max-h-[380px] space-y-3 overflow-y-auto pr-1">
+                @php $lastDate = ''; @endphp
+                @forelse($timeline as $item)
+                    @if($item['date'] !== $lastDate)
+                        <p class="pt-2 text-[10px] font-semibold uppercase tracking-wider text-slate-400 first:pt-0">
+                            @php
+                                $d = \Carbon\Carbon::parse($item['date']);
+                                echo $d->translatedFormat('d F Y');
+                            @endphp
+                        </p>
+                        @php $lastDate = $item['date']; @endphp
+                    @endif
+
+                    <div class="rounded-lg border border-slate-200 p-3">
+                        <div class="flex items-center justify-between gap-2">
+                            <p class="truncate text-sm font-semibold text-slate-700">{{ $item['title'] }}</p>
+                            <span class="text-sm font-semibold text-tabular text-slate-800">{{ $item['amount'] }}</span>
+                        </div>
+                        <p class="mt-1 text-xs text-slate-500">{{ $item['subtitle'] }}</p>
+                    </div>
+                @empty
+                    <div class="sy-empty-state py-8">
+                        <span class="material-symbols-outlined text-4xl text-slate-300">event_available</span>
+                        <p class="mt-2 text-sm text-slate-500">Yaklasan islem yok.</p>
+                    </div>
+                @endforelse
+            </div>
+        </section>
     </div>
 
-    {{-- Bottom Section: Recent Transactions + Cash Accounts --}}
-    <div class="row g-3 mt-1 dashboard-grid">
-        <div class="col-lg-7">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>Son Hareketler</span>
-                    <span class="badge bg-secondary rounded-pill">{{ $recentTransactions->count() }}</span>
-                </div>
-                <div class="card-body p-0">
-                    <table class="table table-sm table-hover mb-0">
-                        <thead>
-                            <tr>
-                                <th>Tarih</th>
-                                <th>Tür</th>
-                                <th>Açıklama</th>
-                                <th class="text-end">Tutar</th>
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <section class="sy-card overflow-hidden lg:col-span-2">
+            <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4">
+                <h2 class="text-lg font-semibold text-slate-800">Son Hareketler</h2>
+                <span class="rounded-md bg-slate-100 px-2 py-1 text-xs font-semibold text-slate-500">{{ $recentTransactions->count() }} kayit</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="sy-table-head">
+                        <tr>
+                            <th class="px-6 py-3 text-left">Tarih</th>
+                            <th class="px-6 py-3 text-left">Tur</th>
+                            <th class="px-6 py-3 text-left">Aciklama</th>
+                            <th class="px-6 py-3 text-right">Tutar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($recentTransactions as $tx)
+                            <tr class="border-t border-slate-200/70 hover:bg-slate-50/60">
+                                <td class="sy-table-cell">{{ \Illuminate\Support\Carbon::parse($tx['date'])->format('d.m.Y') }}</td>
+                                <td class="sy-table-cell">
+                                    @if($tx['type'] === 'receipt')
+                                        <span class="sy-badge-paid">Tahsilat</span>
+                                    @else
+                                        <span class="sy-badge-overdue">Odeme</span>
+                                    @endif
+                                </td>
+                                <td class="sy-table-cell">{{ $tx['description'] }}</td>
+                                <td class="sy-table-cell text-right font-semibold text-slate-800 text-tabular">{{ number_format($tx['amount'], 2, ',', '.') }} TL</td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($recentTransactions as $tx)
-                                <tr>
-                                    <td>{{ \Illuminate\Support\Carbon::parse($tx['date'])->format('d.m.Y') }}</td>
-                                    <td>
-                                        @if($tx['type'] === 'receipt')
-                                            <span class="badge bg-success"><i class="bi bi-arrow-down-short"></i> Tahsilat</span>
-                                        @else
-                                            <span class="badge bg-danger"><i class="bi bi-arrow-up-short"></i> Ödeme</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $tx['description'] }}</td>
-                                    <td class="text-end fw-semibold">{{ number_format($tx['amount'], 2, ',', '.') }} ₺</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="4" class="text-center text-muted py-3">Hareket bulunmuyor</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                        @empty
+                            <tr>
+                                <td colspan="4" class="sy-table-cell py-8 text-center text-slate-400">Hareket bulunmuyor.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
-        </div>
-        <div class="col-lg-5">
-            <div class="card h-100">
-                <div class="card-header">Kasa ve Bankalar</div>
-                <div class="card-body p-0">
-                    <table class="table table-sm mb-0">
-                        <tbody>
-                            @forelse($cashAccounts as $account)
-                                <tr>
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <span
-                                                class="stat-icon {{ $account['type']->value === 'cash' ? 'bg-success-soft' : 'bg-accent' }}"
-                                                style="width:32px;height:32px;font-size:0.85rem;">
-                                                <i
-                                                    class="bi {{ $account['type']->value === 'cash' ? 'bi-cash' : 'bi-bank2' }}"></i>
-                                            </span>
-                                            <span>{{ $account['name'] }}</span>
-                                        </div>
-                                    </td>
-                                    <td
-                                        class="text-end fw-bold {{ $account['balance'] >= 0 ? 'text-success' : 'text-danger' }}">
-                                        {{ number_format($account['balance'], 2, ',', '.') }} ₺
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="2" class="text-center text-muted py-3">Hesap bulunmuyor</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+        </section>
+
+        <section class="sy-card p-6">
+            <h2 class="mb-4 text-lg font-semibold text-slate-800">Kasa ve Bankalar</h2>
+            <div class="space-y-3">
+                @forelse($cashAccounts as $account)
+                    <div class="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg {{ $account['type']->value === 'cash' ? 'bg-emerald-50 text-emerald-600' : 'bg-cyan-50 text-cyan-600' }}">
+                                <span class="material-symbols-outlined text-[18px]">{{ $account['type']->value === 'cash' ? 'payments' : 'account_balance' }}</span>
+                            </span>
+                            <span class="text-sm font-medium text-slate-700">{{ $account['name'] }}</span>
+                        </div>
+                        <span class="text-sm font-semibold text-tabular {{ $account['balance'] >= 0 ? 'text-emerald-600' : 'text-red-600' }}">
+                            {{ number_format($account['balance'], 2, ',', '.') }} TL
+                        </span>
+                    </div>
+                @empty
+                    <div class="rounded-lg border border-dashed border-slate-200 p-4 text-center text-sm text-slate-500">
+                        Hesap bulunmuyor.
+                    </div>
+                @endforelse
             </div>
-        </div>
+        </section>
     </div>
 
     @push('scripts')
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const chartColors = {
-                    notDue: '#818cf8',
-                    dueToday: '#f59e0b',
-                    overdue: '#ef4444',
-                };
-
-                const chartOptions = {
+            document.addEventListener('DOMContentLoaded', () => {
+                const chartColors = ['#818cf8', '#f59e0b', '#ef4444'];
+                const options = {
                     responsive: true,
-                    maintainAspectRatio: true,
-                    cutout: '65%',
+                    maintainAspectRatio: false,
+                    cutout: '75%',
                     plugins: {
                         legend: { display: false },
-                        tooltip: {
-                            callbacks: {
-                                label: function (ctx) {
-                                    return ctx.label + ': ' + new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(ctx.raw);
-                                }
-                            }
-                        }
-                    }
+                    },
                 };
 
-                // Receivables Donut
-                const rcvCtx = document.getElementById('receivablesChart');
-                if (rcvCtx) {
-                    new Chart(rcvCtx, {
+                const receivablesCanvas = document.getElementById('receivablesChart');
+                if (receivablesCanvas) {
+                    new Chart(receivablesCanvas, {
                         type: 'doughnut',
                         data: {
-                            labels: ['Vadesi Gelmemiş', 'Bugün', 'Geciken'],
+                            labels: ['Vadesi Gelmemis', 'Bugun', 'Geciken'],
                             datasets: [{
                                 data: [{{ $receivables['not_due'] }}, {{ $receivables['due_today'] }}, {{ $receivables['overdue'] }}],
-                                backgroundColor: [chartColors.notDue, chartColors.dueToday, chartColors.overdue],
+                                backgroundColor: chartColors,
                                 borderWidth: 0,
-                                spacing: 2,
-                                borderRadius: 4,
-                            }]
+                            }],
                         },
-                        options: chartOptions
+                        options,
                     });
                 }
 
-                // Payables Donut
-                const payCtx = document.getElementById('payablesChart');
-                if (payCtx) {
-                    new Chart(payCtx, {
+                const payablesCanvas = document.getElementById('payablesChart');
+                if (payablesCanvas) {
+                    new Chart(payablesCanvas, {
                         type: 'doughnut',
                         data: {
-                            labels: ['Vadesi Gelmemiş', 'Bugün Ödenecek', 'Geciken'],
+                            labels: ['Vadesi Gelmemis', 'Bugun', 'Geciken'],
                             datasets: [{
                                 data: [{{ $payables['not_due'] }}, {{ $payables['due_today'] }}, {{ $payables['overdue'] }}],
-                                backgroundColor: [chartColors.notDue, chartColors.dueToday, chartColors.overdue],
+                                backgroundColor: chartColors,
                                 borderWidth: 0,
-                                spacing: 2,
-                                borderRadius: 4,
-                            }]
+                            }],
                         },
-                        options: chartOptions
+                        options,
                     });
                 }
             });

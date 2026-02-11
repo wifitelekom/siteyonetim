@@ -1,53 +1,70 @@
 @extends('layouts.app')
 @section('title', 'Ekstre - ' . $account->name)
-@section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0">Ekstre: {{ $account->name }}</h4>
-    <a href="{{ route('cash-accounts.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Geri</a>
-</div>
 
-<div class="card mb-3">
-    <div class="card-body">
-        <form method="GET" class="row g-2 align-items-end">
-            <div class="col-md-4">
-                <label class="form-label">Başlangıç</label>
-                <input type="date" name="from" class="form-control form-control-sm" value="{{ request('from', $from) }}">
+@section('content')
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 class="sy-page-title">Ekstre: {{ $account->name }}</h1>
+        <a href="{{ route('cash-accounts.index') }}" class="sy-btn-ghost">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Geri
+        </a>
+    </div>
+
+    <section class="sy-card mb-4 p-6">
+        <form method="GET" class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div>
+                <label class="sy-label">Baslangic</label>
+                <input type="date" name="from" value="{{ request('from', $from) }}" class="sy-input">
             </div>
-            <div class="col-md-4">
-                <label class="form-label">Bitiş</label>
-                <input type="date" name="to" class="form-control form-control-sm" value="{{ request('to', $to) }}">
+            <div>
+                <label class="sy-label">Bitis</label>
+                <input type="date" name="to" value="{{ request('to', $to) }}" class="sy-input">
             </div>
-            <div class="col-md-4">
-                <button type="submit" class="btn btn-primary btn-sm w-100"><i class="bi bi-search"></i> Sorgula</button>
+            <div class="flex items-end">
+                <button type="submit" class="sy-btn-primary w-full">
+                    <span class="material-symbols-outlined text-[18px]">search</span>
+                    Sorgula
+                </button>
             </div>
         </form>
-    </div>
-</div>
+    </section>
 
-<div class="card">
-    <div class="card-body p-0">
-        <table class="table table-sm mb-0">
-            <thead><tr><th>Tarih</th><th>Açıklama</th><th class="text-end">Giriş</th><th class="text-end">Çıkış</th><th class="text-end">Bakiye</th></tr></thead>
-            <tbody>
-                <tr class="table-light">
-                    <td colspan="4"><strong>Açılış Bakiyesi</strong></td>
-                    <td class="text-end fw-bold">{{ number_format($opening_balance, 2, ',', '.') }} ₺</td>
-                </tr>
-                @foreach($transactions as $mov)
-                <tr>
-                    <td>{{ $mov['date'] }}</td>
-                    <td>{{ $mov['description'] }}</td>
-                    <td class="text-end text-success">{{ $mov['direction'] === 'in' ? number_format($mov['amount'], 2, ',', '.') . ' ₺' : '' }}</td>
-                    <td class="text-end text-danger">{{ $mov['direction'] === 'out' ? number_format($mov['amount'], 2, ',', '.') . ' ₺' : '' }}</td>
-                    <td class="text-end fw-bold">{{ number_format($mov['balance'], 2, ',', '.') }} ₺</td>
-                </tr>
-                @endforeach
-                <tr class="table-dark">
-                    <td colspan="4"><strong>Kapanış Bakiyesi</strong></td>
-                    <td class="text-end fw-bold">{{ number_format($closing_balance, 2, ',', '.') }} ₺</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+    <section class="sy-card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="sy-table-head">
+                    <tr>
+                        <th class="px-6 py-3 text-left">Tarih</th>
+                        <th class="px-6 py-3 text-left">Aciklama</th>
+                        <th class="px-6 py-3 text-right">Giris</th>
+                        <th class="px-6 py-3 text-right">Cikis</th>
+                        <th class="px-6 py-3 text-right">Bakiye</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-t border-slate-200/70 bg-slate-50/80">
+                        <td colspan="4" class="sy-table-cell font-semibold text-slate-700">Acilis Bakiyesi</td>
+                        <td class="sy-table-cell text-right font-semibold text-tabular text-slate-800">{{ number_format($opening_balance, 2, ',', '.') }} TL</td>
+                    </tr>
+                    @foreach($transactions as $mov)
+                        <tr class="border-t border-slate-200/70 hover:bg-slate-50/60">
+                            <td class="sy-table-cell">{{ $mov['date'] }}</td>
+                            <td class="sy-table-cell">{{ $mov['description'] }}</td>
+                            <td class="sy-table-cell text-right text-tabular text-emerald-600">
+                                {{ $mov['direction'] === 'in' ? number_format($mov['amount'], 2, ',', '.') . ' TL' : '' }}
+                            </td>
+                            <td class="sy-table-cell text-right text-tabular text-red-600">
+                                {{ $mov['direction'] === 'out' ? number_format($mov['amount'], 2, ',', '.') . ' TL' : '' }}
+                            </td>
+                            <td class="sy-table-cell text-right text-tabular font-semibold text-slate-800">{{ number_format($mov['balance'], 2, ',', '.') }} TL</td>
+                        </tr>
+                    @endforeach
+                    <tr class="border-t border-slate-200/70 bg-slate-50/80">
+                        <td colspan="4" class="sy-table-cell font-semibold text-slate-700">Kapanis Bakiyesi</td>
+                        <td class="sy-table-cell text-right font-semibold text-tabular text-slate-800">{{ number_format($closing_balance, 2, ',', '.') }} TL</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
 @endsection

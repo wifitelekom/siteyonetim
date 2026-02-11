@@ -16,11 +16,22 @@ use App\Http\Controllers\VendorController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SiteSettingsController;
+use App\Http\Controllers\SuperSiteController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/dashboard');
 
 Route::middleware(['auth', 'site.scope'])->group(function () {
+
+    // Super Admin - Sites
+    Route::prefix('super')->name('super.')->middleware('role:super-admin')->group(function () {
+        Route::get('sites', [SuperSiteController::class, 'index'])->name('sites.index');
+        Route::get('sites/create', [SuperSiteController::class, 'create'])->name('sites.create');
+        Route::post('sites', [SuperSiteController::class, 'store'])->name('sites.store');
+        Route::get('sites/{site}/edit', [SuperSiteController::class, 'edit'])->name('sites.edit');
+        Route::put('sites/{site}', [SuperSiteController::class, 'update'])->name('sites.update');
+        Route::delete('sites/{site}', [SuperSiteController::class, 'destroy'])->name('sites.destroy');
+    });
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');

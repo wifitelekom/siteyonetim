@@ -1,62 +1,80 @@
 @extends('layouts.app')
-@section('title', 'Ödeme Raporu')
-@section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0">Ödeme Raporu</h4>
-    <div>
-        @if(isset($data))
-        <a href="{{ route('reports.payments.pdf', request()->query()) }}" class="btn btn-outline-danger btn-sm" target="_blank"><i class="bi bi-file-pdf"></i> PDF</a>
-        @endif
-        <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Raporlar</a>
-    </div>
-</div>
+@section('title', 'Odeme Raporu')
 
-<div class="card mb-4">
-    <div class="card-body">
-        <form method="GET" class="row g-3 align-items-end">
-            <div class="col-md-4">
-                <label for="from" class="form-label">Başlangıç</label>
-                <input type="date" class="form-control" name="from" value="{{ request('from', now()->startOfMonth()->format('Y-m-d')) }}">
+@section('content')
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 class="sy-page-title">Odeme Raporu</h1>
+        <div class="flex items-center gap-2">
+            @if(isset($data))
+                <a href="{{ route('reports.payments.pdf', request()->query()) }}" target="_blank" class="sy-btn-secondary">
+                    <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                    PDF
+                </a>
+            @endif
+            <a href="{{ route('reports.index') }}" class="sy-btn-ghost">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                Raporlar
+            </a>
+        </div>
+    </div>
+
+    <section class="sy-card mb-4 p-6">
+        <form method="GET" class="grid grid-cols-1 gap-4 md:grid-cols-3">
+            <div>
+                <label for="from" class="sy-label">Baslangic</label>
+                <input type="date" name="from" value="{{ request('from', now()->startOfMonth()->format('Y-m-d')) }}" class="sy-input">
             </div>
-            <div class="col-md-4">
-                <label for="to" class="form-label">Bitiş</label>
-                <input type="date" class="form-control" name="to" value="{{ request('to', now()->format('Y-m-d')) }}">
+            <div>
+                <label for="to" class="sy-label">Bitis</label>
+                <input type="date" name="to" value="{{ request('to', now()->format('Y-m-d')) }}" class="sy-input">
             </div>
-            <div class="col-md-4">
-                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search"></i> Sorgula</button>
+            <div class="flex items-end">
+                <button type="submit" class="sy-btn-primary w-full">
+                    <span class="material-symbols-outlined text-[18px]">search</span>
+                    Sorgula
+                </button>
             </div>
         </form>
-    </div>
-</div>
+    </section>
 
-@if(isset($data))
-<div class="card">
-    <div class="card-body p-0">
-        <table class="table table-sm mb-0">
-            <thead><tr><th>Tarih</th><th>Tedarikçi</th><th>Yöntem</th><th>Kasa/Banka</th><th class="text-end">Tutar</th></tr></thead>
-            <tbody>
-                @forelse($data['payments'] as $payment)
-                <tr>
-                    <td>{{ $payment->paid_at->format('d.m.Y') }}</td>
-                    <td>{{ $payment->vendor?->name ?? '-' }}</td>
-                    <td>{{ $payment->method->label() }}</td>
-                    <td>{{ $payment->cashAccount->name }}</td>
-                    <td class="text-end">{{ number_format($payment->total_amount, 2, ',', '.') }} ₺</td>
-                </tr>
-                @empty
-                <tr><td colspan="5" class="text-center text-muted py-3">Ödeme yok</td></tr>
-                @endforelse
-            </tbody>
-            @if($data['payments']->count() > 0)
-            <tfoot>
-                <tr class="table-dark">
-                    <td colspan="4"><strong>Toplam</strong></td>
-                    <td class="text-end fw-bold">{{ number_format($data['payments']->sum('total_amount'), 2, ',', '.') }} ₺</td>
-                </tr>
-            </tfoot>
-            @endif
-        </table>
-    </div>
-</div>
-@endif
+    @if(isset($data))
+        <section class="sy-card overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead class="sy-table-head">
+                        <tr>
+                            <th class="px-6 py-3 text-left">Tarih</th>
+                            <th class="px-6 py-3 text-left">Tedarikci</th>
+                            <th class="px-6 py-3 text-left">Yontem</th>
+                            <th class="px-6 py-3 text-left">Kasa/Banka</th>
+                            <th class="px-6 py-3 text-right">Tutar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($data['payments'] as $payment)
+                            <tr class="border-t border-slate-200/70 hover:bg-slate-50/60">
+                                <td class="sy-table-cell">{{ $payment->paid_at->format('d.m.Y') }}</td>
+                                <td class="sy-table-cell">{{ $payment->vendor?->name ?? '-' }}</td>
+                                <td class="sy-table-cell">{{ $payment->method->label() }}</td>
+                                <td class="sy-table-cell">{{ $payment->cashAccount->name }}</td>
+                                <td class="sy-table-cell text-right text-tabular">{{ number_format($payment->total_amount, 2, ',', '.') }} TL</td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="5" class="sy-table-cell py-8 text-center text-slate-400">Odeme yok</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                    @if($data['payments']->count() > 0)
+                        <tfoot>
+                            <tr class="border-t border-slate-200 bg-slate-50/80">
+                                <td colspan="4" class="sy-table-cell font-semibold text-slate-700">Toplam</td>
+                                <td class="sy-table-cell text-right font-semibold text-tabular text-slate-800">{{ number_format($data['payments']->sum('total_amount'), 2, ',', '.') }} TL</td>
+                            </tr>
+                        </tfoot>
+                    @endif
+                </table>
+            </div>
+        </section>
+    @endif
 @endsection

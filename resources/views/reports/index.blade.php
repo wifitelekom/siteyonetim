@@ -1,78 +1,66 @@
 @extends('layouts.app')
 @section('title', 'Raporlar')
-@section('content')
-<h4 class="mb-4">Raporlar</h4>
 
-<div class="row g-3">
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body text-center">
-                <i class="bi bi-bank2 fs-1 text-primary"></i>
-                <h5 class="mt-3">Kasa/Banka Ekstresi</h5>
-                <p class="text-muted small">Kasa ve banka hesaplarının tarih aralığına göre hareketleri</p>
-                <a href="{{ route('reports.cash-statement') }}" class="btn btn-outline-primary btn-sm">Görüntüle</a>
-            </div>
-        </div>
+@section('content')
+    <div class="mb-6 flex items-center justify-between">
+        <h1 class="sy-page-title">Raporlar</h1>
     </div>
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body text-center">
-                <i class="bi bi-journal-text fs-1 text-info"></i>
-                <h5 class="mt-3">Hesap Ekstresi</h5>
-                <p class="text-muted small">Muhasebe hesaplarına göre gelir/gider hareketleri</p>
-                <a href="{{ route('reports.account-statement') }}" class="btn btn-outline-info btn-sm">Görüntüle</a>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <a href="{{ route('reports.cash-statement') }}" class="sy-card sy-card-hover p-6">
+            <div class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary-50 text-primary-600">
+                <span class="material-symbols-outlined">account_balance</span>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body text-center">
-                <i class="bi bi-cash-stack fs-1 text-success"></i>
-                <h5 class="mt-3">Tahsilat Raporu</h5>
-                <p class="text-muted small">Tarih aralığına göre tahsilat detayları</p>
-                <a href="{{ route('reports.collections') }}" class="btn btn-outline-success btn-sm">Görüntüle</a>
+            <h2 class="text-lg font-semibold text-slate-800">Kasa/Banka Ekstresi</h2>
+            <p class="mt-2 text-sm text-slate-500">Kasa ve banka hesaplari hareketleri.</p>
+        </a>
+
+        <a href="{{ route('reports.account-statement') }}" class="sy-card sy-card-hover p-6">
+            <div class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-50 text-cyan-600">
+                <span class="material-symbols-outlined">summarize</span>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body text-center">
-                <i class="bi bi-credit-card fs-1 text-danger"></i>
-                <h5 class="mt-3">Ödeme Raporu</h5>
-                <p class="text-muted small">Tedarikçilere yapılan ödeme detayları</p>
-                <a href="{{ route('reports.payments') }}" class="btn btn-outline-danger btn-sm">Görüntüle</a>
+            <h2 class="text-lg font-semibold text-slate-800">Hesap Ekstresi</h2>
+            <p class="mt-2 text-sm text-slate-500">Muhasebe hesaplarina gore hareketler.</p>
+        </a>
+
+        <a href="{{ route('reports.collections') }}" class="sy-card sy-card-hover p-6">
+            <div class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                <span class="material-symbols-outlined">payments</span>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body text-center">
-                <i class="bi bi-exclamation-triangle fs-1 text-warning"></i>
-                <h5 class="mt-3">Borç Durumu</h5>
-                <p class="text-muted small">Daire bazında açık/vadesi geçmiş borçlar</p>
-                <a href="{{ route('reports.debt-status') }}" class="btn btn-outline-warning btn-sm">Görüntüle</a>
+            <h2 class="text-lg font-semibold text-slate-800">Tahsilat Raporu</h2>
+            <p class="mt-2 text-sm text-slate-500">Tarih araligina gore tahsilatlar.</p>
+        </a>
+
+        <a href="{{ route('reports.payments') }}" class="sy-card sy-card-hover p-6">
+            <div class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-600">
+                <span class="material-symbols-outlined">credit_card</span>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body text-center">
-                <i class="bi bi-arrow-down-circle fs-1 text-secondary"></i>
-                <h5 class="mt-3">Alacak Durumu</h5>
-                <p class="text-muted small">Tedarikçilere olan borç durumu</p>
-                <a href="{{ route('reports.receivable-status') }}" class="btn btn-outline-secondary btn-sm">Görüntüle</a>
+            <h2 class="text-lg font-semibold text-slate-800">Odeme Raporu</h2>
+            <p class="mt-2 text-sm text-slate-500">Tedarikcilere yapilan odemeler.</p>
+        </a>
+
+        <a href="{{ route('reports.debt-status') }}" class="sy-card sy-card-hover p-6">
+            <div class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                <span class="material-symbols-outlined">error</span>
             </div>
-        </div>
-    </div>
-    <div class="col-md-4">
-        <div class="card h-100">
-            <div class="card-body text-center">
-                <i class="bi bi-list-check fs-1 text-dark"></i>
-                <h5 class="mt-3">Tahakkuk Listesi</h5>
-                <p class="text-muted small">Dönem bazında tüm tahakkuklar</p>
-                <a href="{{ route('reports.charge-list') }}" class="btn btn-outline-dark btn-sm">Görüntüle</a>
+            <h2 class="text-lg font-semibold text-slate-800">Borc Durumu</h2>
+            <p class="mt-2 text-sm text-slate-500">Daire bazinda acik borclar.</p>
+        </a>
+
+        <a href="{{ route('reports.receivable-status') }}" class="sy-card sy-card-hover p-6">
+            <div class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-600">
+                <span class="material-symbols-outlined">monitoring</span>
             </div>
-        </div>
+            <h2 class="text-lg font-semibold text-slate-800">Alacak Durumu</h2>
+            <p class="mt-2 text-sm text-slate-500">Tedarikci borc durumu.</p>
+        </a>
+
+        <a href="{{ route('reports.charge-list') }}" class="sy-card sy-card-hover p-6">
+            <div class="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-700">
+                <span class="material-symbols-outlined">list_alt</span>
+            </div>
+            <h2 class="text-lg font-semibold text-slate-800">Tahakkuk Listesi</h2>
+            <p class="mt-2 text-sm text-slate-500">Donem bazinda tum tahakkuklar.</p>
+        </a>
     </div>
-</div>
 @endsection

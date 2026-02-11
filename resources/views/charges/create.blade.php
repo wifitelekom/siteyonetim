@@ -1,70 +1,98 @@
 @extends('layouts.app')
 @section('title', 'Yeni Tahakkuk')
-@section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0">Yeni Tahakkuk</h4>
-    <div>
-        <a href="{{ route('charges.create-bulk') }}" class="btn btn-outline-info btn-sm"><i class="bi bi-collection"></i> Toplu Tahakkuk</a>
-        <a href="{{ route('charges.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Geri</a>
-    </div>
-</div>
 
-<div class="card">
-    <div class="card-body">
+@section('content')
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 class="sy-page-title">Yeni Tahakkuk</h1>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('charges.create-bulk') }}" class="sy-btn-secondary">
+                <span class="material-symbols-outlined text-[18px]">library_add</span>
+                Toplu Tahakkuk
+            </a>
+            <a href="{{ route('charges.index') }}" class="sy-btn-ghost">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                Geri
+            </a>
+        </div>
+    </div>
+
+    <section class="sy-card mx-auto max-w-5xl p-6 sm:p-8">
         <form method="POST" action="{{ route('charges.store') }}">
             @csrf
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="apartment_id" class="form-label">Daire *</label>
-                    <select name="apartment_id" id="apartment_id" class="form-select @error('apartment_id') is-invalid @enderror" required>
-                        <option value="">Seçiniz</option>
+
+            <div class="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                    <label for="apartment_id" class="sy-label">Daire <span class="text-red-500">*</span></label>
+                    <select name="apartment_id" id="apartment_id" class="sy-input @error('apartment_id') border-red-300 ring-red-200 @enderror" required>
+                        <option value="">Seciniz</option>
                         @foreach($apartments as $apt)
-                            <option value="{{ $apt->id }}" {{ old('apartment_id') == $apt->id ? 'selected' : '' }}>{{ $apt->full_label }}</option>
+                            <option value="{{ $apt->id }}" @selected(old('apartment_id') == $apt->id)>{{ $apt->full_label }}</option>
                         @endforeach
                     </select>
-                    @error('apartment_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    @error('apartment_id')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="account_id" class="form-label">Hesap *</label>
-                    <select name="account_id" id="account_id" class="form-select @error('account_id') is-invalid @enderror" required>
-                        <option value="">Seçiniz</option>
+
+                <div>
+                    <label for="account_id" class="sy-label">Hesap <span class="text-red-500">*</span></label>
+                    <select name="account_id" id="account_id" class="sy-input @error('account_id') border-red-300 ring-red-200 @enderror" required>
+                        <option value="">Seciniz</option>
                         @foreach($accounts as $account)
-                            <option value="{{ $account->id }}" {{ old('account_id') == $account->id ? 'selected' : '' }}>{{ $account->full_name }}</option>
+                            <option value="{{ $account->id }}" @selected(old('account_id') == $account->id)>{{ $account->full_name }}</option>
                         @endforeach
                     </select>
-                    @error('account_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    @error('account_id')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-3 mb-3">
-                    <label for="charge_type" class="form-label">Tür *</label>
-                    <select name="charge_type" id="charge_type" class="form-select" required>
-                        <option value="aidat" {{ old('charge_type') == 'aidat' ? 'selected' : '' }}>Aidat</option>
-                        <option value="other" {{ old('charge_type') == 'other' ? 'selected' : '' }}>Diğer</option>
+
+            <div class="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                <div>
+                    <label for="charge_type" class="sy-label">Tur <span class="text-red-500">*</span></label>
+                    <select name="charge_type" id="charge_type" class="sy-input" required>
+                        <option value="aidat" @selected(old('charge_type') === 'aidat')>Aidat</option>
+                        <option value="other" @selected(old('charge_type') === 'other')>Diger</option>
                     </select>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <label for="period" class="form-label">Dönem *</label>
-                    <input type="month" class="form-control @error('period') is-invalid @enderror" id="period" name="period" value="{{ old('period', date('Y-m')) }}" required>
-                    @error('period')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+                <div>
+                    <label for="period" class="sy-label">Donem <span class="text-red-500">*</span></label>
+                    <input type="month" id="period" name="period" value="{{ old('period', date('Y-m')) }}" class="sy-input @error('period') border-red-300 ring-red-200 @enderror" required>
+                    @error('period')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
-                <div class="col-md-3 mb-3">
-                    <label for="due_date" class="form-label">Vade Tarihi *</label>
-                    <input type="date" class="form-control @error('due_date') is-invalid @enderror" id="due_date" name="due_date" value="{{ old('due_date') }}" required>
-                    @error('due_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+                <div>
+                    <label for="due_date" class="sy-label">Vade Tarihi <span class="text-red-500">*</span></label>
+                    <input type="date" id="due_date" name="due_date" value="{{ old('due_date') }}" class="sy-input @error('due_date') border-red-300 ring-red-200 @enderror" required>
+                    @error('due_date')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
-                <div class="col-md-3 mb-3">
-                    <label for="amount" class="form-label">Tutar (₺) *</label>
-                    <input type="number" step="0.01" min="0.01" class="form-control @error('amount') is-invalid @enderror" id="amount" name="amount" value="{{ old('amount') }}" required>
-                    @error('amount')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+                <div>
+                    <label for="amount" class="sy-label">Tutar (TL) <span class="text-red-500">*</span></label>
+                    <input type="number" step="0.01" min="0.01" id="amount" name="amount" value="{{ old('amount') }}" class="sy-input @error('amount') border-red-300 ring-red-200 @enderror" required>
+                    @error('amount')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
-            <div class="mb-3">
-                <label for="description" class="form-label">Açıklama</label>
-                <input type="text" class="form-control" id="description" name="description" value="{{ old('description') }}">
+
+            <div class="mb-8">
+                <label for="description" class="sy-label">Aciklama</label>
+                <input type="text" id="description" name="description" value="{{ old('description') }}" class="sy-input">
             </div>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Kaydet</button>
+
+            <div class="flex justify-end">
+                <button type="submit" class="sy-btn-primary">
+                    <span class="material-symbols-outlined text-[18px]">check</span>
+                    Kaydet
+                </button>
+            </div>
         </form>
-    </div>
-</div>
+    </section>
 @endsection

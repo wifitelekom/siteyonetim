@@ -1,37 +1,51 @@
 @extends('layouts.app')
 @section('title', 'Hesap Düzenle')
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0">Hesap Düzenle</h4>
-    <a href="{{ route('accounts.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Geri</a>
+<div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold text-gray-800">Hesap Düzenle</h2>
+    <a href="{{ route('accounts.index') }}" class="px-4 py-2 text-gray-500 hover:bg-gray-50 rounded-full transition-colors flex items-center gap-2 text-sm font-medium">
+        <span class="material-symbols-outlined text-lg">arrow_back</span>
+        Geri
+    </a>
 </div>
-<div class="card">
-    <div class="card-body">
+
+<div class="bg-white rounded-card border border-gray-100 shadow-sm max-w-2xl mx-auto">
+    <div class="p-8">
         <form method="POST" action="{{ route('accounts.update', $account) }}">
             @csrf @method('PUT')
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="code" class="form-label">Hesap Kodu *</label>
-                    <input type="text" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code', $account->code) }}" required>
-                    @error('code')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="name" class="form-label">Hesap Adı *</label>
-                    <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name', $account->name) }}" required>
-                    @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
-                </div>
-                <div class="col-md-4 mb-3">
-                    <label for="type" class="form-label">Tür *</label>
-                    <select name="type" id="type" class="form-select @error('type') is-invalid @enderror" required>
+            
+            <div class="mb-5">
+                <label for="code" class="block text-sm font-medium text-gray-700 mb-2">Hesap Kodu <span class="text-red-500">*</span></label>
+                <input type="text" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none transition-all @error('code') border-red-300 bg-red-50 @enderror" id="code" name="code" value="{{ old('code', $account->code) }}" required>
+                @error('code')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
+            </div>
+            
+            <div class="mb-5">
+                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Hesap Adı <span class="text-red-500">*</span></label>
+                <input type="text" class="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none transition-all @error('name') border-red-300 bg-red-50 @enderror" id="name" name="name" value="{{ old('name', $account->name) }}" required>
+                @error('name')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
+            </div>
+            
+            <div class="mb-8">
+                <label for="type" class="block text-sm font-medium text-gray-700 mb-2">Tür <span class="text-red-500">*</span></label>
+                <div class="relative">
+                    <select name="type" id="type" class="w-full pl-4 pr-10 py-2 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none transition-all appearance-none @error('type') border-red-300 bg-red-50 @enderror" required>
                         <option value="income" {{ old('type', $account->type->value) == 'income' ? 'selected' : '' }}>Gelir</option>
                         <option value="expense" {{ old('type', $account->type->value) == 'expense' ? 'selected' : '' }}>Gider</option>
                         <option value="asset" {{ old('type', $account->type->value) == 'asset' ? 'selected' : '' }}>Varlık</option>
                         <option value="liability" {{ old('type', $account->type->value) == 'liability' ? 'selected' : '' }}>Borç</option>
                     </select>
-                    @error('type')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">expand_more</span>
                 </div>
+                @error('type')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
             </div>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Güncelle</button>
+            
+             <div class="flex justify-end">
+                <button type="submit" class="px-6 py-2 bg-[var(--primary)] text-white rounded-xl font-medium hover:opacity-90 transition-all shadow-md shadow-teal-900/10 flex items-center gap-2">
+                    <span class="material-symbols-outlined">save</span>
+                    Güncelle
+                </button>
+            </div>
         </form>
     </div>
 </div>

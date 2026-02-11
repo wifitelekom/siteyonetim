@@ -1,80 +1,95 @@
 @extends('layouts.guest')
-@section('title', 'Kayit Ol')
+@section('title', 'Kayıt Ol')
 @section('content')
-<div class="card shadow-sm border-0">
-    <div class="card-body p-4">
-        <h5 class="mb-3">Yeni hesap olustur</h5>
+<div class="bg-white p-8 rounded-card border border-gray-100 shadow-xl shadow-gray-200/50">
+    <h5 class="mb-6 text-center font-bold text-gray-800 text-lg">Yeni hesap oluştur</h5>
 
-        @if($errors->any())
-            <div class="alert alert-danger">
-                <ul class="mb-0 ps-3">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+    @if($errors->any())
+        <div class="mb-6 p-4 rounded-xl bg-red-50 text-red-600 text-sm border border-red-100">
+            <ul class="list-disc list-inside space-y-1">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-        <form method="POST" action="{{ route('register') }}">
-            @csrf
-            <div class="mb-3">
-                <label for="name" class="form-label">Ad Soyad</label>
+    <form method="POST" action="{{ route('register') }}">
+        @csrf
+        <div class="mb-4">
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Ad Soyad</label>
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">person</span>
                 <input
                     type="text"
-                    class="form-control @error('name') is-invalid @enderror"
+                    class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none transition-all @error('name') border-red-300 bg-red-50 @enderror"
                     id="name"
                     name="name"
                     value="{{ old('name') }}"
                     required
                     autofocus
+                    placeholder="Ad Soyad"
                 >
-                @error('name')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
+            @error('name')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
+        </div>
 
-            <div class="mb-3">
-                <label for="email" class="form-label">E-posta</label>
+        <div class="mb-4">
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">E-posta</label>
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">mail</span>
                 <input
                     type="email"
-                    class="form-control @error('email') is-invalid @enderror"
+                    class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none transition-all @error('email') border-red-300 bg-red-50 @enderror"
                     id="email"
                     name="email"
                     value="{{ old('email') }}"
                     required
+                    placeholder="ornek@mail.com"
                 >
-                @error('email')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
+            @error('email')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
+        </div>
 
-            <div class="mb-3">
-                <label for="password" class="form-label">Sifre</label>
+        <div class="mb-4">
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Şifre</label>
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">key</span>
                 <input
                     type="password"
-                    class="form-control @error('password') is-invalid @enderror"
+                    class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none transition-all @error('password') border-red-300 bg-red-50 @enderror"
                     id="password"
                     name="password"
                     required
+                    placeholder="••••••••"
                 >
-                @error('password')<div class="invalid-feedback">{{ $message }}</div>@enderror
             </div>
+            @error('password')<div class="text-red-500 text-xs mt-1">{{ $message }}</div>@enderror
+        </div>
 
-            <div class="mb-3">
-                <label for="password_confirmation" class="form-label">Sifre Tekrar</label>
+        <div class="mb-6">
+            <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Şifre Tekrar</label>
+            <div class="relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">lock_reset</span>
                 <input
                     type="password"
-                    class="form-control"
+                    class="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-[var(--primary)] focus:border-transparent outline-none transition-all"
                     id="password_confirmation"
                     name="password_confirmation"
                     required
+                    placeholder="••••••••"
                 >
             </div>
+        </div>
 
-            <button type="submit" class="btn btn-primary w-100">
-                <i class="bi bi-person-plus"></i> Kayit Ol
-            </button>
-        </form>
-    </div>
-    <div class="card-footer bg-white text-center">
-        <small class="text-muted">Zaten hesabiniz var mi?</small>
-        <a href="{{ route('login') }}" class="small ms-1">Giris Yap</a>
-    </div>
+        <button type="submit" class="w-full py-3 px-4 bg-[var(--primary)] text-white font-bold rounded-xl hover:opacity-90 transition-all shadow-md shadow-teal-900/10 flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined">person_add</span>
+            Kayıt Ol
+        </button>
+    </form>
+</div>
+<div class="mt-6 text-center">
+    <span class="text-gray-500 text-sm">Zaten hesabınız var mı?</span>
+    <a href="{{ route('login') }}" class="ml-1 text-[var(--primary)] font-bold hover:underline">Giriş Yap</a>
 </div>
 @endsection

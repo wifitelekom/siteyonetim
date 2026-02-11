@@ -1,61 +1,81 @@
 @extends('layouts.app')
 @section('title', 'Gider Ekle')
-@section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0">Gider Ekle</h4>
-    <a href="{{ route('expenses.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Geri</a>
-</div>
 
-<div class="card">
-    <div class="card-body">
+@section('content')
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 class="sy-page-title">Gider Ekle</h1>
+        <a href="{{ route('expenses.index') }}" class="sy-btn-ghost">
+            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+            Geri
+        </a>
+    </div>
+
+    <section class="sy-card mx-auto max-w-5xl p-6 sm:p-8">
         <form method="POST" action="{{ route('expenses.store') }}">
             @csrf
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="vendor_id" class="form-label">Tedarikçi</label>
-                    <select name="vendor_id" id="vendor_id" class="form-select @error('vendor_id') is-invalid @enderror">
-                        <option value="">Seçiniz (opsiyonel)</option>
-                        @foreach($vendors as $v)
-                            <option value="{{ $v->id }}" {{ old('vendor_id') == $v->id ? 'selected' : '' }}>{{ $v->name }}</option>
+
+            <div class="mb-6 grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                    <label for="vendor_id" class="sy-label">Tedarikci</label>
+                    <select name="vendor_id" id="vendor_id" class="sy-input">
+                        <option value="">Seciniz (opsiyonel)</option>
+                        @foreach($vendors as $vendor)
+                            <option value="{{ $vendor->id }}" @selected(old('vendor_id') == $vendor->id)>{{ $vendor->name }}</option>
                         @endforeach
                     </select>
-                    @error('vendor_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="account_id" class="form-label">Gider Hesabı *</label>
-                    <select name="account_id" id="account_id" class="form-select @error('account_id') is-invalid @enderror" required>
-                        <option value="">Seçiniz</option>
-                        @foreach($accounts as $acc)
-                            <option value="{{ $acc->id }}" {{ old('account_id') == $acc->id ? 'selected' : '' }}>{{ $acc->full_name }}</option>
+
+                <div>
+                    <label for="account_id" class="sy-label">Gider Hesabi <span class="text-red-500">*</span></label>
+                    <select name="account_id" id="account_id" class="sy-input @error('account_id') border-red-300 ring-red-200 @enderror" required>
+                        <option value="">Seciniz</option>
+                        @foreach($accounts as $account)
+                            <option value="{{ $account->id }}" @selected(old('account_id') == $account->id)>{{ $account->full_name }}</option>
                         @endforeach
                     </select>
-                    @error('account_id')<div class="invalid-feedback">{{ $message }}</div>@enderror
+                    @error('account_id')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
-            <div class="row">
-                <div class="col-md-3 mb-3">
-                    <label for="expense_date" class="form-label">Gider Tarihi *</label>
-                    <input type="date" class="form-control @error('expense_date') is-invalid @enderror" id="expense_date" name="expense_date" value="{{ old('expense_date', date('Y-m-d')) }}" required>
-                    @error('expense_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+            <div class="mb-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
+                <div>
+                    <label for="expense_date" class="sy-label">Gider Tarihi <span class="text-red-500">*</span></label>
+                    <input type="date" id="expense_date" name="expense_date" value="{{ old('expense_date', date('Y-m-d')) }}" class="sy-input @error('expense_date') border-red-300 ring-red-200 @enderror" required>
+                    @error('expense_date')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
-                <div class="col-md-3 mb-3">
-                    <label for="due_date" class="form-label">Vade Tarihi *</label>
-                    <input type="date" class="form-control @error('due_date') is-invalid @enderror" id="due_date" name="due_date" value="{{ old('due_date') }}" required>
-                    @error('due_date')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+                <div>
+                    <label for="due_date" class="sy-label">Vade Tarihi <span class="text-red-500">*</span></label>
+                    <input type="date" id="due_date" name="due_date" value="{{ old('due_date') }}" class="sy-input @error('due_date') border-red-300 ring-red-200 @enderror" required>
+                    @error('due_date')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
-                <div class="col-md-3 mb-3">
-                    <label for="amount" class="form-label">Tutar (₺) *</label>
-                    <input type="number" step="0.01" min="0.01" class="form-control @error('amount') is-invalid @enderror" id="amount" name="amount" value="{{ old('amount') }}" required>
-                    @error('amount')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+                <div>
+                    <label for="amount" class="sy-label">Tutar (TL) <span class="text-red-500">*</span></label>
+                    <input type="number" step="0.01" min="0.01" id="amount" name="amount" value="{{ old('amount') }}" class="sy-input @error('amount') border-red-300 ring-red-200 @enderror" required>
+                    @error('amount')
+                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
-            <div class="mb-3">
-                <label for="description" class="form-label">Açıklama</label>
-                <input type="text" class="form-control @error('description') is-invalid @enderror" id="description" name="description" value="{{ old('description') }}">
-                @error('description')<div class="invalid-feedback">{{ $message }}</div>@enderror
+
+            <div class="mb-8">
+                <label for="description" class="sy-label">Aciklama</label>
+                <input type="text" id="description" name="description" value="{{ old('description') }}" class="sy-input">
             </div>
-            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Kaydet</button>
+
+            <div class="flex justify-end">
+                <button type="submit" class="sy-btn-primary">
+                    <span class="material-symbols-outlined text-[18px]">check</span>
+                    Kaydet
+                </button>
+            </div>
         </form>
-    </div>
-</div>
+    </section>
 @endsection

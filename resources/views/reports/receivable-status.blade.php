@@ -1,49 +1,66 @@
 @extends('layouts.app')
 @section('title', 'Alacak Durumu')
-@section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0">Alacak Durumu (Tedarikçi Bazında)</h4>
-    <div>
-        <a href="{{ route('reports.receivable-status.pdf') }}" class="btn btn-outline-danger btn-sm" target="_blank"><i class="bi bi-file-pdf"></i> PDF</a>
-        <a href="{{ route('reports.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Raporlar</a>
-    </div>
-</div>
 
-<div class="card">
-    <div class="card-body p-0">
-        <table class="table table-sm mb-0">
-            <thead><tr><th>Tedarikçi</th><th class="text-end">Toplam Gider</th><th class="text-end">Ödenen</th><th class="text-end">Kalan Borç</th><th>Durum</th></tr></thead>
-            <tbody>
-                @forelse($receivables as $row)
-                <tr>
-                    <td>{{ $row['vendor'] }}</td>
-                    <td class="text-end">{{ number_format($row['total'], 2, ',', '.') }} ₺</td>
-                    <td class="text-end text-success">{{ number_format($row['paid'], 2, ',', '.') }} ₺</td>
-                    <td class="text-end text-danger fw-bold">{{ number_format($row['remaining'], 2, ',', '.') }} ₺</td>
-                    <td>
-                        @if($row['remaining'] > 0)
-                            <span class="badge bg-danger">Borçlu</span>
-                        @else
-                            <span class="badge bg-success">Ödendi</span>
-                        @endif
-                    </td>
-                </tr>
-                @empty
-                <tr><td colspan="5" class="text-center text-muted py-3">Tedarikçi borcu yok</td></tr>
-                @endforelse
-            </tbody>
-            @if(count($receivables) > 0)
-            <tfoot>
-                <tr class="table-dark">
-                    <td><strong>Genel Toplam</strong></td>
-                    <td class="text-end fw-bold">{{ number_format(collect($receivables)->sum('total'), 2, ',', '.') }} ₺</td>
-                    <td class="text-end fw-bold">{{ number_format(collect($receivables)->sum('paid'), 2, ',', '.') }} ₺</td>
-                    <td class="text-end fw-bold">{{ number_format(collect($receivables)->sum('remaining'), 2, ',', '.') }} ₺</td>
-                    <td></td>
-                </tr>
-            </tfoot>
-            @endif
-        </table>
+@section('content')
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 class="sy-page-title">Alacak Durumu</h1>
+        <div class="flex items-center gap-2">
+            <a href="{{ route('reports.receivable-status.pdf') }}" target="_blank" class="sy-btn-secondary">
+                <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                PDF
+            </a>
+            <a href="{{ route('reports.index') }}" class="sy-btn-ghost">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                Raporlar
+            </a>
+        </div>
     </div>
-</div>
+
+    <section class="sy-card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="sy-table-head">
+                    <tr>
+                        <th class="px-6 py-3 text-left">Tedarikci</th>
+                        <th class="px-6 py-3 text-right">Toplam Gider</th>
+                        <th class="px-6 py-3 text-right">Odenen</th>
+                        <th class="px-6 py-3 text-right">Kalan Borc</th>
+                        <th class="px-6 py-3 text-left">Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($receivables as $row)
+                        <tr class="border-t border-slate-200/70 hover:bg-slate-50/60">
+                            <td class="sy-table-cell">{{ $row['vendor'] }}</td>
+                            <td class="sy-table-cell text-right text-tabular">{{ number_format($row['total'], 2, ',', '.') }} TL</td>
+                            <td class="sy-table-cell text-right text-tabular text-emerald-600">{{ number_format($row['paid'], 2, ',', '.') }} TL</td>
+                            <td class="sy-table-cell text-right text-tabular font-semibold text-red-600">{{ number_format($row['remaining'], 2, ',', '.') }} TL</td>
+                            <td class="sy-table-cell">
+                                @if($row['remaining'] > 0)
+                                    <span class="sy-badge-overdue">Borclu</span>
+                                @else
+                                    <span class="sy-badge-paid">Odendi</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="5" class="sy-table-cell py-8 text-center text-slate-400">Tedarikci borcu yok</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+                @if(count($receivables) > 0)
+                    <tfoot>
+                        <tr class="border-t border-slate-200 bg-slate-50/80">
+                            <td class="sy-table-cell font-semibold text-slate-700">Genel Toplam</td>
+                            <td class="sy-table-cell text-right font-semibold text-tabular text-slate-800">{{ number_format(collect($receivables)->sum('total'), 2, ',', '.') }} TL</td>
+                            <td class="sy-table-cell text-right font-semibold text-tabular text-slate-800">{{ number_format(collect($receivables)->sum('paid'), 2, ',', '.') }} TL</td>
+                            <td class="sy-table-cell text-right font-semibold text-tabular text-slate-800">{{ number_format(collect($receivables)->sum('remaining'), 2, ',', '.') }} TL</td>
+                            <td class="sy-table-cell"></td>
+                        </tr>
+                    </tfoot>
+                @endif
+            </table>
+        </div>
+    </section>
 @endsection

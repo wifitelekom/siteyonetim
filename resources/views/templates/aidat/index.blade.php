@@ -1,62 +1,66 @@
 @extends('layouts.app')
-@section('title', 'Aidat Şablonları')
+@section('title', 'Aidat Sablonlari')
+
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">Aidat Şablonları</h4>
-        <a href="{{ route('templates.aidat.create') }}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg"></i> Yeni
-            Şablon</a>
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 class="sy-page-title">Aidat Sablonlari</h1>
+        <a href="{{ route('templates.aidat.create') }}" class="sy-btn-primary">
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            Yeni Sablon
+        </a>
     </div>
 
-    <div class="card">
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0" data-datatable>
-                <thead>
+    <section class="sy-card overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full" data-datatable>
+                <thead class="sy-table-head">
                     <tr>
-                        <th>Şablon Adı</th>
-                        <th>Hesap</th>
-                        <th>Tutar</th>
-                        <th>Vade Günü</th>
-                        <th>Kapsam</th>
-                        <th>Durum</th>
-                        <th width="120">İşlem</th>
+                        <th class="px-6 py-3 text-left">Sablon Adi</th>
+                        <th class="px-6 py-3 text-left">Hesap</th>
+                        <th class="px-6 py-3 text-left">Tutar</th>
+                        <th class="px-6 py-3 text-left">Vade Gunu</th>
+                        <th class="px-6 py-3 text-left">Kapsam</th>
+                        <th class="px-6 py-3 text-left">Durum</th>
+                        <th class="px-6 py-3 text-right">Islem</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($templates as $template)
-                        <tr>
-                            <td>{{ $template->name }}</td>
-                            <td>{{ $template->account->full_name }}</td>
-                            <td>{{ number_format($template->amount, 2, ',', '.') }} ₺</td>
-                            <td>Her ayın {{ $template->due_day }}. günü</td>
-                            <td>
+                        <tr class="border-t border-slate-200/70 hover:bg-slate-50/60">
+                            <td class="sy-table-cell">{{ $template->name }}</td>
+                            <td class="sy-table-cell">{{ $template->account->full_name }}</td>
+                            <td class="sy-table-cell text-tabular">{{ number_format($template->amount, 2, ',', '.') }} TL</td>
+                            <td class="sy-table-cell">Her ayin {{ $template->due_day }}. gunu</td>
+                            <td class="sy-table-cell">
                                 @if($template->scope === 'all')
-                                    <span class="badge bg-info">Tüm Daireler</span>
+                                    <span class="sy-badge-partial">Tum Daireler</span>
                                 @else
-                                    <span class="badge bg-secondary">{{ $template->apartments->count() }} Daire</span>
+                                    <span class="sy-badge-pending">{{ $template->apartments->count() }} Daire</span>
                                 @endif
                             </td>
-                            <td>
-                                @if($template->is_active)
-                                    <span class="badge bg-success">Aktif</span>
-                                @else
-                                    <span class="badge bg-danger">Pasif</span>
-                                @endif
+                            <td class="sy-table-cell">
+                                <span class="{{ $template->is_active ? 'sy-badge-paid' : 'sy-badge-overdue' }}">
+                                    {{ $template->is_active ? 'Aktif' : 'Pasif' }}
+                                </span>
                             </td>
-                            <td>
-                                <a href="{{ route('templates.aidat.edit', $template) }}"
-                                    class="btn btn-outline-primary btn-sm"><i class="bi bi-pencil"></i></a>
-                                <button class="btn btn-outline-danger btn-sm"
-                                    onclick="deleteRecord('{{ route('templates.aidat.destroy', $template) }}')"><i
-                                        class="bi bi-trash"></i></button>
+                            <td class="sy-table-cell text-right">
+                                <div class="inline-flex items-center gap-2">
+                                    <a href="{{ route('templates.aidat.edit', $template) }}" class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-primary-50 hover:text-primary-600">
+                                        <span class="material-symbols-outlined text-[18px]">edit</span>
+                                    </a>
+                                    <button type="button" data-delete-action="{{ route('templates.aidat.destroy', $template) }}" class="inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-red-50 hover:text-red-600">
+                                        <span class="material-symbols-outlined text-[18px]">delete</span>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center text-muted py-3">Henüz şablon oluşturulmamış</td>
+                            <td colspan="7" class="sy-table-cell py-8 text-center text-slate-400">Henuz sablon olusturulmamis</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
-    </div>
+    </section>
 @endsection

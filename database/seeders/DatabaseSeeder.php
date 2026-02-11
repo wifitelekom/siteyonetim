@@ -11,6 +11,7 @@ class DatabaseSeeder extends Seeder
         $seeders = [
             SiteSeeder::class,
             RolePermissionSeeder::class,
+            SuperAdminSeeder::class,
             AccountSeeder::class,
             CashAccountSeeder::class,
             ApartmentSeeder::class,

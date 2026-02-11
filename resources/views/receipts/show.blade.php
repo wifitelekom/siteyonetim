@@ -1,52 +1,86 @@
 @extends('layouts.app')
 @section('title', 'Tahsilat Detay')
+
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h4 class="mb-0">Tahsilat Detay</h4>
-    <div>
-        @can('receipts.print')
-        <a href="{{ route('receipts.pdf', $receipt) }}" class="btn btn-outline-danger btn-sm" target="_blank"><i class="bi bi-file-pdf"></i> PDF</a>
-        @endcan
-        <a href="{{ route('receipts.index') }}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-arrow-left"></i> Geri</a>
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+        <h1 class="sy-page-title">Tahsilat Detay</h1>
+        <div class="flex items-center gap-2">
+            @can('receipts.print')
+                <a href="{{ route('receipts.pdf', $receipt) }}" target="_blank" class="sy-btn-secondary">
+                    <span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+                    PDF
+                </a>
+            @endcan
+            <a href="{{ route('receipts.index') }}" class="sy-btn-ghost">
+                <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                Geri
+            </a>
+        </div>
     </div>
-</div>
 
-<div class="card">
-    <div class="card-header">Makbuz Bilgileri</div>
-    <div class="card-body">
-        <table class="table table-borderless">
-            <tr><th width="25%">Makbuz No</th><td>{{ $receipt->receipt_no }}</td></tr>
-            <tr><th>Daire</th><td>{{ $receipt->apartment->full_label }}</td></tr>
-            <tr><th>Ödeme Tarihi</th><td>{{ $receipt->paid_at->format('d.m.Y') }}</td></tr>
-            <tr><th>Ödeme Yöntemi</th><td>{{ $receipt->method->label() }}</td></tr>
-            <tr><th>Kasa/Banka</th><td>{{ $receipt->cashAccount->name }}</td></tr>
-            <tr><th>Toplam Tutar</th><td class="fw-bold text-success">{{ number_format($receipt->total_amount, 2, ',', '.') }} ₺</td></tr>
-            <tr><th>Açıklama</th><td>{{ $receipt->description ?? '-' }}</td></tr>
-        </table>
-    </div>
-</div>
+    <section class="sy-card mb-4 p-6">
+        <h2 class="mb-4 text-lg font-semibold text-slate-800">Makbuz Bilgileri</h2>
+        <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Makbuz No</dt>
+                <dd class="mt-1 text-sm font-medium text-slate-700">{{ $receipt->receipt_no }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Daire</dt>
+                <dd class="mt-1 text-sm font-medium text-slate-700">{{ $receipt->apartment->full_label }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Odeme Tarihi</dt>
+                <dd class="mt-1 text-sm font-medium text-slate-700">{{ $receipt->paid_at->format('d.m.Y') }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Odeme Yontemi</dt>
+                <dd class="mt-1 text-sm font-medium text-slate-700">{{ $receipt->method->label() }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Kasa/Banka</dt>
+                <dd class="mt-1 text-sm font-medium text-slate-700">{{ $receipt->cashAccount->name }}</dd>
+            </div>
+            <div>
+                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Toplam Tutar</dt>
+                <dd class="mt-1 text-sm font-semibold text-tabular text-emerald-600">{{ number_format($receipt->total_amount, 2, ',', '.') }} TL</dd>
+            </div>
+            <div class="sm:col-span-2">
+                <dt class="text-xs font-semibold uppercase tracking-wider text-slate-400">Aciklama</dt>
+                <dd class="mt-1 text-sm text-slate-600">{{ $receipt->description ?? '-' }}</dd>
+            </div>
+        </dl>
+    </section>
 
-<div class="card mt-3">
-    <div class="card-header">Ödeme Kalemleri</div>
-    <div class="card-body p-0">
-        <table class="table table-sm mb-0">
-            <thead><tr><th>Hesap</th><th>Dönem</th><th class="text-end">Tutar</th></tr></thead>
-            <tbody>
-                @foreach($receipt->items as $item)
-                <tr>
-                    <td>{{ $item->charge->account->full_name }}</td>
-                    <td>{{ $item->charge->period }}</td>
-                    <td class="text-end">{{ number_format($item->amount, 2, ',', '.') }} ₺</td>
-                </tr>
-                @endforeach
-            </tbody>
-            <tfoot>
-                <tr class="table-dark">
-                    <td colspan="2"><strong>Toplam</strong></td>
-                    <td class="text-end fw-bold">{{ number_format($receipt->total_amount, 2, ',', '.') }} ₺</td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-</div>
+    <section class="sy-card overflow-hidden">
+        <div class="border-b border-slate-200 px-6 py-4">
+            <h2 class="text-lg font-semibold text-slate-800">Odeme Kalemleri</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full">
+                <thead class="sy-table-head">
+                    <tr>
+                        <th class="px-6 py-3 text-left">Hesap</th>
+                        <th class="px-6 py-3 text-left">Donem</th>
+                        <th class="px-6 py-3 text-right">Tutar</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($receipt->items as $item)
+                        <tr class="border-t border-slate-200/70 hover:bg-slate-50/60">
+                            <td class="sy-table-cell">{{ $item->charge->account->full_name }}</td>
+                            <td class="sy-table-cell">{{ $item->charge->period }}</td>
+                            <td class="sy-table-cell text-right text-tabular">{{ number_format($item->amount, 2, ',', '.') }} TL</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+                <tfoot>
+                    <tr class="border-t border-slate-200 bg-slate-50/80">
+                        <td colspan="2" class="sy-table-cell font-semibold text-slate-700">Toplam</td>
+                        <td class="sy-table-cell text-right font-semibold text-tabular text-slate-800">{{ number_format($receipt->total_amount, 2, ',', '.') }} TL</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </section>
 @endsection
