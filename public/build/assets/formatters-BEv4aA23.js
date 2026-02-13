@@ -1,0 +1,1 @@
+const t=r=>new Intl.NumberFormat("tr-TR",{style:"currency",currency:"TRY",minimumFractionDigits:2}).format(Number(r??0)),e=r=>r?new Intl.DateTimeFormat("tr-TR",{year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date(r)):"-";export{e as a,t as f};

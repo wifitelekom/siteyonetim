@@ -43,15 +43,20 @@ class TemplateService
                 $dueDate = $this->calculateDueDate($period, $template->due_day);
 
                 foreach ($apartments as $apartment) {
-                    $exists = Charge::withoutGlobalScope('site')
-                        ->where('site_id', $site->id)
-                        ->where('apartment_id', $apartment->id)
-                        ->where('period', $period)
-                        ->where('account_id', $template->account_id)
-                        ->exists();
-
-                    if (!$exists) {
+                    try {
                         DB::transaction(function () use ($site, $template, $apartment, $period, $dueDate, &$count) {
+                            $exists = Charge::withoutGlobalScope('site')
+                                ->where('site_id', $site->id)
+                                ->where('apartment_id', $apartment->id)
+                                ->where('period', $period)
+                                ->where('account_id', $template->account_id)
+                                ->lockForUpdate()
+                                ->exists();
+
+                            if ($exists) {
+                                return;
+                            }
+
                             Charge::withoutGlobalScope('site')->create([
                                 'site_id' => $site->id,
                                 'apartment_id' => $apartment->id,
@@ -64,6 +69,11 @@ class TemplateService
                             ]);
                             $count++;
                         });
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        // Duplicate entry (1062) — skip silently
+                        if ($e->errorInfo[1] !== 1062) {
+                            throw $e;
+                        }
                     }
                 }
             }

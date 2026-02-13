@@ -17,11 +17,10 @@ class PaymentService
      * Make payment for one or more expenses.
      * $allocations = [['expense_id' => 1, 'amount' => 500.00], ...]
      */
-    public function makePayment(array $data, array $allocations): Payment
+    public function makePayment(array $data, array $allocations): ?Payment
     {
         return DB::transaction(function () use ($data, $allocations) {
             $siteId = $data['site_id'] ?? auth()->user()->site_id;
-            $totalAmount = collect($allocations)->sum('amount');
 
             $payment = Payment::create([
                 'site_id' => $siteId,
@@ -29,24 +28,39 @@ class PaymentService
                 'cash_account_id' => $data['cash_account_id'],
                 'paid_at' => $data['paid_at'],
                 'method' => $data['method'],
-                'total_amount' => $totalAmount,
+                'total_amount' => 0,
                 'description' => $data['description'] ?? null,
                 'created_by' => $data['created_by'] ?? auth()->id(),
             ]);
 
+            $actualTotal = 0;
+
             foreach ($allocations as $alloc) {
                 $expense = Expense::whereKey($alloc['expense_id'])
                     ->where('site_id', $siteId)
+                    ->lockForUpdate()
                     ->firstOrFail();
+
+                $cappedAmount = min((float) $alloc['amount'], (float) $expense->remaining);
+                if ($cappedAmount <= 0) {
+                    continue;
+                }
 
                 PaymentItem::create([
                     'payment_id' => $payment->id,
                     'expense_id' => $expense->id,
-                    'amount' => $alloc['amount'],
+                    'amount' => $cappedAmount,
                 ]);
 
+                $actualTotal += $cappedAmount;
                 $this->expenseService->recalculatePaidAmount($expense);
             }
+
+            if ($actualTotal <= 0) {
+                return null;
+            }
+
+            $payment->update(['total_amount' => $actualTotal]);
 
             return $payment;
         });
@@ -55,7 +69,7 @@ class PaymentService
     /**
      * Make payment for a single expense (simplified).
      */
-    public function makeSinglePayment(array $data, Expense $expense, float $amount): Payment
+    public function makeSinglePayment(array $data, Expense $expense, float $amount): ?Payment
     {
         return $this->makePayment(
             array_merge($data, ['vendor_id' => $expense->vendor_id]),

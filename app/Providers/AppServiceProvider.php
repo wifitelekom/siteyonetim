@@ -20,7 +20,10 @@ use App\Policies\PaymentPolicy;
 use App\Policies\ReceiptPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\VendorPolicy;
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -32,6 +35,10 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        RateLimiter::for('login', function (Request $request) {
+            return Limit::perMinute(5)->by($request->ip());
+        });
+
         Gate::policy(Charge::class, ChargePolicy::class);
         Gate::policy(Receipt::class, ReceiptPolicy::class);
         Gate::policy(Expense::class, ExpensePolicy::class);

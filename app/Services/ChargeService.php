@@ -34,13 +34,28 @@ class ChargeService
                 $exists = Charge::where('apartment_id', $apartmentId)
                     ->where('period', $data['period'])
                     ->where('account_id', $data['account_id'])
+                    ->lockForUpdate()
                     ->exists();
 
                 if (!$exists) {
-                    $this->createCharge(array_merge($data, [
-                        'apartment_id' => $apartmentId,
-                    ]));
-                    $count++;
+                    try {
+                        Charge::create([
+                            'site_id' => $data['site_id'] ?? auth()->user()->site_id,
+                            'apartment_id' => $apartmentId,
+                            'account_id' => $data['account_id'],
+                            'charge_type' => $data['charge_type'] ?? 'aidat',
+                            'period' => $data['period'],
+                            'due_date' => $data['due_date'],
+                            'amount' => $data['amount'],
+                            'description' => $data['description'] ?? null,
+                            'created_by' => $data['created_by'] ?? auth()->id(),
+                        ]);
+                        $count++;
+                    } catch (\Illuminate\Database\QueryException $e) {
+                        if ($e->errorInfo[1] !== 1062) {
+                            throw $e;
+                        }
+                    }
                 }
             }
 

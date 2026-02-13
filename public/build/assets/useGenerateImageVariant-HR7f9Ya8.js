@@ -1,0 +1,1 @@
+import{n as u}from"./main-OjHNd2U9.js";import{s as f}from"./vuetify-BWJcAN87.js";import{f as i}from"./vendor-DfCbaU-T.js";const p=(e,o,s,a,r=!1)=>{const n=u(),{global:t}=f();return i(()=>t.name.value==="light"?n.skin==="bordered"&&r?s:e:t.name.value==="dark"?n.skin==="bordered"&&r?a:o:e)};export{p as u};

@@ -1,0 +1,11 @@
+// Eliminate iOS Safari 300ms tap delay
+*,
+*::before,
+*::after {
+  touch-action: manipulation;
+}
+
+// Disable tap highlight color on mobile WebKit
+html {
+  -webkit-tap-highlight-color: transparent;
+}

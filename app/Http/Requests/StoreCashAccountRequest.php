@@ -12,6 +12,7 @@ class StoreCashAccountRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'type' => ['required', 'in:cash,bank'],
             'opening_balance' => ['required', 'numeric', 'min:0'],
+            'is_active' => ['sometimes', 'boolean'],
         ];
     }
 }
