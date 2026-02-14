@@ -72,7 +72,20 @@ class DashboardService
         $cashAccounts = null;
         $totalCash = null;
         if ($isAdmin) {
-            $cashAccounts = CashAccount::withComputedBalance()->where('is_active', true)->get()->map(function ($account) {
+            $cashAccountQuery = CashAccount::query()->where('is_active', true);
+
+            if (method_exists(CashAccount::class, 'scopeWithComputedBalance')) {
+                $cashAccountQuery->withComputedBalance();
+            } else {
+                $cashAccountQuery->addSelect([
+                    'receipts_total' => Receipt::selectRaw('COALESCE(SUM(total_amount), 0)')
+                        ->whereColumn('cash_account_id', 'cash_accounts.id'),
+                    'payments_total' => Payment::selectRaw('COALESCE(SUM(total_amount), 0)')
+                        ->whereColumn('cash_account_id', 'cash_accounts.id'),
+                ]);
+            }
+
+            $cashAccounts = $cashAccountQuery->get()->map(function ($account) {
                 return [
                     'id' => $account->id,
                     'name' => $account->name,
