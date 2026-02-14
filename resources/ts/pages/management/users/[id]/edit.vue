@@ -98,13 +98,13 @@ const passwordConfirmationRules = [
     if (!form.value.password)
       return true
 
-    return requiredRule('Sifre tekrar zorunludur.')(value)
+    return requiredRule('Şifre tekrar zorunludur.')(value)
   },
   (value: unknown) => {
     if (!form.value.password)
       return true
 
-    return matchRule(() => form.value.password, 'Sifreler eslesmiyor.')(value)
+    return matchRule(() => form.value.password, 'Şifreler eşleşmiyor.')(value)
   },
 ]
 const roleRules = [requiredRule()]
@@ -138,7 +138,7 @@ const fetchDetail = async () => {
       apartmentForm.value.relation_type = relationTypes.value[0]?.value ?? 'owner'
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Kullanici detayi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Kullanıcı detayı alınamadı.')
   }
   finally {
     loading.value = false
@@ -176,7 +176,7 @@ const submit = async () => {
     await fetchDetail()
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Kullanici guncellenemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'Kullanıcı güncellenemedi.')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -193,7 +193,7 @@ const deleteUser = async () => {
     await router.push('/management/users')
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Kullanici silinemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'Kullanıcı silinemedi.')
   }
   finally {
     deleting.value = false
@@ -223,7 +223,7 @@ const addApartment = async () => {
     await fetchDetail()
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Daire iliskisi eklenemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'Daire ilişkisi eklenemedi.')
     apartmentErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -240,7 +240,7 @@ const removeApartment = async (apartmentId: number) => {
     await fetchDetail()
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Daire iliskisi kaldirilamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Daire ilişkisi kaldırılamadı.')
   }
   finally {
     removingApartmentId.value = null
@@ -256,10 +256,10 @@ onMounted(fetchDetail)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Kullanici Duzenle
+            {{ $t('pages.users.editTitle') }}
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Kullanici bilgileri ve daire iliskileri
+            {{ $t('pages.users.editSubtitle') }}
           </p>
         </div>
 
@@ -355,7 +355,7 @@ onMounted(fetchDetail)
                 <VTextField
                   v-model="form.password"
                   type="password"
-                  label="Yeni Sifre"
+                  label="Yeni Şifre"
                   :rules="passwordRules"
                   :error-messages="fieldErrors.password ?? []"
                 />
@@ -367,7 +367,7 @@ onMounted(fetchDetail)
                 <VTextField
                   v-model="form.password_confirmation"
                   type="password"
-                  label="Sifre Tekrar"
+                  label="Şifre Tekrar"
                   :rules="passwordConfirmationRules"
                   :error-messages="fieldErrors.password_confirmation ?? []"
                 />
@@ -394,7 +394,7 @@ onMounted(fetchDetail)
                     :loading="saving"
                     :disabled="saving"
                   >
-                    Guncelle
+                    {{ $t('common.update') }}
                   </VBtn>
                 </div>
               </VCol>
@@ -406,7 +406,7 @@ onMounted(fetchDetail)
 
     <VCol cols="12">
       <VCard :loading="loading">
-        <VCardItem title="Bagli Daireler" />
+        <VCardItem title="Bağlı Daireler" />
         <VCardText>
           <VForm
             ref="apartmentFormRef"
@@ -422,7 +422,7 @@ onMounted(fetchDetail)
                   :items="availableApartments"
                   item-title="label"
                   item-value="id"
-                  label="Daire"
+                  :label="$t('common.apartment')"
                   :rules="apartmentRules"
                   :error-messages="apartmentErrors.apartment_id ?? []"
                 />
@@ -436,7 +436,7 @@ onMounted(fetchDetail)
                   :items="relationTypes"
                   item-title="label"
                   item-value="value"
-                  label="Tur"
+                  :label="$t('common.type')"
                   :rules="relationRules"
                   :error-messages="apartmentErrors.relation_type ?? []"
                 />
@@ -448,7 +448,7 @@ onMounted(fetchDetail)
                 <VTextField
                   v-model="apartmentForm.start_date"
                   type="date"
-                  label="Baslangic"
+                  :label="$t('common.startDate')"
                   :error-messages="apartmentErrors.start_date ?? []"
                 />
               </VCol>
@@ -474,9 +474,9 @@ onMounted(fetchDetail)
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Daire</th>
-              <th>Tur</th>
-              <th>Baslangic</th>
+              <th>{{ $t('common.apartment') }}</th>
+              <th>{{ $t('common.type') }}</th>
+              <th>{{ $t('common.startDate') }}</th>
               <th class="text-right">
                 Islem
               </th>
@@ -517,7 +517,7 @@ onMounted(fetchDetail)
                 colspan="4"
                 class="text-center text-medium-emphasis py-6"
               >
-                Bagli daire yok.
+                Bağlı daire yok.
               </td>
             </tr>
           </tbody>

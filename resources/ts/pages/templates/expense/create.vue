@@ -15,6 +15,7 @@ interface ExpenseMetaResponse {
 
 const router = useRouter()
 const { withAbort } = useAbortOnUnmount()
+const listRoute = { path: '/templates/expense' } as const
 
 const loadingMeta = ref(false)
 const loading = ref(false)
@@ -61,7 +62,7 @@ const fetchMeta = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Form verileri alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Form verileri alınamadı.')
   }
   finally {
     loadingMeta.value = false
@@ -92,11 +93,11 @@ const submit = async () => {
       signal,
     }))
 
-    await router.push('/templates/expense')
+    await router.push(listRoute)
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Gider sablonu olusturulamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Gider şablonu oluşturulamadı.')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -113,16 +114,16 @@ onMounted(fetchMeta)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Yeni Gider Sablonu
+            Yeni Gider Şablonu
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Gider sablon bilgilerini girin
+            {{ $t('pages.expenseTemplates.createSubtitle') }}
           </p>
         </div>
 
         <VBtn
           variant="outlined"
-          to="/templates/expense"
+          :to="listRoute"
         >
           Listeye Don
         </VBtn>
@@ -155,7 +156,7 @@ onMounted(fetchMeta)
               >
                 <VTextField
                   v-model="form.name"
-                  label="Sablon Adi"
+                  :label="$t('common.templateName')"
                   :rules="nameRules"
                   :error-messages="fieldErrors.name ?? []"
                 />
@@ -170,7 +171,7 @@ onMounted(fetchMeta)
                   :items="vendors"
                   item-title="label"
                   item-value="id"
-                  label="Tedarikci"
+                  :label="$t('common.vendor')"
                   clearable
                   :error-messages="fieldErrors.vendor_id ?? []"
                 />
@@ -185,7 +186,7 @@ onMounted(fetchMeta)
                   :items="accounts"
                   item-title="label"
                   item-value="id"
-                  label="Hesap"
+                  :label="$t('common.account')"
                   :rules="accountRules"
                   :error-messages="fieldErrors.account_id ?? []"
                 />
@@ -200,7 +201,7 @@ onMounted(fetchMeta)
                   :items="periods"
                   item-title="label"
                   item-value="value"
-                  label="Periyot"
+                  :label="$t('common.periodicity')"
                   :rules="periodRules"
                   :error-messages="fieldErrors.period ?? []"
                 />
@@ -215,7 +216,7 @@ onMounted(fetchMeta)
                   type="number"
                   min="1"
                   max="28"
-                  label="Vade Gunu"
+                  :label="$t('common.dueDay')"
                   :rules="dueDayRules"
                   :error-messages="fieldErrors.due_day ?? []"
                 />
@@ -227,7 +228,7 @@ onMounted(fetchMeta)
                   type="number"
                   min="0.01"
                   step="0.01"
-                  label="Tutar"
+                  :label="$t('common.amount')"
                   :rules="amountRules"
                   :error-messages="fieldErrors.amount ?? []"
                 />
@@ -236,7 +237,7 @@ onMounted(fetchMeta)
               <VCol cols="12">
                 <VSwitch
                   v-model="form.is_active"
-                  label="Aktif"
+                  :label="$t('common.active')"
                   color="primary"
                 />
               </VCol>
@@ -245,7 +246,7 @@ onMounted(fetchMeta)
                 <div class="d-flex justify-end gap-3">
                   <VBtn
                     variant="outlined"
-                    to="/templates/expense"
+                    :to="listRoute"
                   >
                     Iptal
                   </VBtn>
@@ -255,7 +256,7 @@ onMounted(fetchMeta)
                     :loading="loading"
                     :disabled="loading"
                   >
-                    Kaydet
+                    {{ $t('common.save') }}
                   </VBtn>
                 </div>
               </VCol>
@@ -266,4 +267,5 @@ onMounted(fetchMeta)
     </VCol>
   </VRow>
 </template>
+
 

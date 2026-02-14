@@ -85,7 +85,7 @@ const fetchMeta = async () => {
     typeOptions.value = response.data.types
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Hesap turleri alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Hesap turleri alınamadı.')
   }
   finally {
     loadingMeta.value = false
@@ -109,7 +109,7 @@ const fetchAccounts = async (page = 1) => {
     pagination.value = response.meta
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Hesaplar alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Hesaplar alınamadı.')
   }
   finally {
     loading.value = false
@@ -249,7 +249,7 @@ onMounted(async () => {
                 :items="typeOptions"
                 item-title="label"
                 item-value="value"
-                label="Tur"
+                :label="$t('common.type')"
                 clearable
               />
             </VCol>
@@ -260,7 +260,7 @@ onMounted(async () => {
             >
               <VTextField
                 v-model="filters.search"
-                label="Arama"
+                :label="$t('common.search')"
                 placeholder="Kod veya hesap adi"
               />
             </VCol>
@@ -271,13 +271,13 @@ onMounted(async () => {
                   variant="outlined"
                   @click="resetFilters"
                 >
-                  Temizle
+                  {{ $t('common.clear') }}
                 </VBtn>
                 <VBtn
                   color="primary"
                   @click="applyFilters"
                 >
-                  Filtrele
+                  {{ $t('common.filter') }}
                 </VBtn>
               </div>
             </VCol>
@@ -303,10 +303,10 @@ onMounted(async () => {
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Kod</th>
-              <th>Hesap Adi</th>
-              <th>Tur</th>
-              <th class="text-right">Islemler</th>
+              <th>{{ $t('common.code') }}</th>
+              <th>{{ $t('common.accountName') }}</th>
+              <th>{{ $t('common.type') }}</th>
+              <th class="text-right">{{ $t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -352,14 +352,14 @@ onMounted(async () => {
                 colspan="4"
                 class="text-center text-medium-emphasis py-6"
               >
-                Kayit bulunamadi.
+                {{ $t('common.noRecords') }}
               </td>
             </tr>
           </tbody>
         </VTable>
 
         <VCardText class="d-flex justify-space-between align-center flex-wrap gap-3">
-          <span class="text-sm text-medium-emphasis">Toplam {{ pagination.total }} kayit</span>
+          <span class="text-sm text-medium-emphasis">{{ $t('common.totalRecords', { count: pagination.total }) }}</span>
 
           <VPagination
             :model-value="pagination.current_page"
@@ -375,7 +375,7 @@ onMounted(async () => {
       v-model="dialogOpen"
       max-width="560"
     >
-      <VCard :title="isEdit ? 'Hesap Duzenle' : 'Yeni Hesap'">
+      <VCard :title="isEdit ? 'Hesap Düzenle' : 'Yeni Hesap'">
         <VCardText>
           <VForm
             ref="formRef"
@@ -385,7 +385,7 @@ onMounted(async () => {
               <VCol cols="12">
                 <VTextField
                   v-model="form.code"
-                  label="Hesap Kodu"
+                  :label="$t('common.accountCode')"
                   :rules="codeRules"
                   :error-messages="fieldErrors.code ?? []"
                 />
@@ -394,7 +394,7 @@ onMounted(async () => {
               <VCol cols="12">
                 <VTextField
                   v-model="form.name"
-                  label="Hesap Adi"
+                  :label="$t('common.accountName')"
                   :rules="nameRules"
                   :error-messages="fieldErrors.name ?? []"
                 />
@@ -406,7 +406,7 @@ onMounted(async () => {
                   :items="typeOptions"
                   item-title="label"
                   item-value="value"
-                  label="Tur"
+                  :label="$t('common.type')"
                   :rules="typeRules"
                   :error-messages="fieldErrors.type ?? []"
                 />
@@ -421,7 +421,7 @@ onMounted(async () => {
             variant="outlined"
             @click="dialogOpen = false"
           >
-            Vazgec
+            {{ $t('common.cancel') }}
           </VBtn>
           <VBtn
             color="primary"
@@ -429,10 +429,11 @@ onMounted(async () => {
             :disabled="submitting"
             @click="submitAccount"
           >
-            Kaydet
+            {{ $t('common.save') }}
           </VBtn>
         </VCardActions>
       </VCard>
     </VDialog>
   </VRow>
 </template>
+

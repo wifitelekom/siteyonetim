@@ -11,9 +11,20 @@ interface Suggestion {
   url: RouteLocationRaw
 }
 
+interface SuggestionSeed {
+  icon: string
+  titleKey: string
+  url: RouteLocationRaw
+}
+
 interface SuggestionGroup {
   title: string
   content: Suggestion[]
+}
+
+interface SuggestionGroupSeed {
+  titleKey: string
+  content: SuggestionSeed[]
 }
 
 interface SearchResults {
@@ -27,54 +38,55 @@ defineOptions({
 
 const configStore = useConfigStore()
 const authSession = useAuthSession()
+const { t } = useI18n({ useScope: 'global' })
 
 const isAppSearchBarVisible = ref(false)
 
-const baseSuggestionGroups: SuggestionGroup[] = [
+const baseSuggestionGroups: SuggestionGroupSeed[] = [
   {
-    title: 'Hizli Erisim',
+    titleKey: 'navigation.quickAccess',
     content: [
-      { icon: 'ri-home-4-line', title: 'Panel', url: { path: '/' } },
-      { icon: 'ri-file-list-3-line', title: 'Tahakkuklar', url: { path: '/charges' } },
-      { icon: 'ri-receipt-line', title: 'Tahsilatlar', url: { path: '/receipts' } },
-      { icon: 'ri-bar-chart-grouped-line', title: 'Raporlar', url: { path: '/reports' } },
-      { icon: 'ri-wallet-line', title: 'Kasa/Banka', url: { path: '/cash-accounts' } },
-      { icon: 'ri-lock-password-line', title: 'Sifre Degistir', url: { path: '/profile/password' } },
+      { icon: 'ri-home-4-line', titleKey: 'navigation.dashboard', url: { path: '/' } },
+      { icon: 'ri-file-list-3-line', titleKey: 'navigation.charges', url: { path: '/charges' } },
+      { icon: 'ri-receipt-line', titleKey: 'navigation.receipts', url: { path: '/receipts' } },
+      { icon: 'ri-bar-chart-grouped-line', titleKey: 'navigation.reports', url: { path: '/reports' } },
+      { icon: 'ri-wallet-line', titleKey: 'navigation.cashAccounts', url: { path: '/cash-accounts' } },
+      { icon: 'ri-lock-password-line', titleKey: 'navigation.passwordChange', url: { path: '/profile/password' } },
     ],
   },
   {
-    title: 'Yonetim',
+    titleKey: 'navigation.management',
     content: [
-      { icon: 'ri-wallet-3-line', title: 'Giderler', url: { path: '/expenses' } },
-      { icon: 'ri-secure-payment-line', title: 'Odemeler', url: { path: '/payments' } },
-      { icon: 'ri-bank-card-line', title: 'Hesaplar', url: { path: '/accounts' } },
-      { icon: 'ri-building-line', title: 'Daireler', url: { path: '/management/apartments' } },
-      { icon: 'ri-group-line', title: 'Kullanicilar', url: { path: '/management/users' } },
-      { icon: 'ri-store-2-line', title: 'Tedarikciler', url: { path: '/management/vendors' } },
-      { icon: 'ri-settings-3-line', title: 'Site Ayarlari', url: { path: '/management/site-settings' } },
-      { icon: 'ri-file-copy-2-line', title: 'Aidat Sablonlari', url: { path: '/templates/aidat' } },
-      { icon: 'ri-file-list-2-line', title: 'Gider Sablonlari', url: { path: '/templates/expense' } },
-      { icon: 'ri-add-circle-line', title: 'Yeni Tahakkuk', url: { path: '/charges/create' } },
+      { icon: 'ri-wallet-3-line', titleKey: 'navigation.expenses', url: { path: '/expenses' } },
+      { icon: 'ri-secure-payment-line', titleKey: 'navigation.payments', url: { path: '/payments' } },
+      { icon: 'ri-bank-card-line', titleKey: 'navigation.accounts', url: { path: '/accounts' } },
+      { icon: 'ri-building-line', titleKey: 'navigation.apartments', url: { path: '/management/apartments' } },
+      { icon: 'ri-group-line', titleKey: 'navigation.users', url: { path: '/management/users' } },
+      { icon: 'ri-store-2-line', titleKey: 'navigation.vendors', url: { path: '/management/vendors' } },
+      { icon: 'ri-settings-3-line', titleKey: 'navigation.siteSettings', url: { path: '/management/site-settings' } },
+      { icon: 'ri-file-copy-2-line', titleKey: 'navigation.aidatTemplates', url: { path: '/templates/aidat' } },
+      { icon: 'ri-file-list-2-line', titleKey: 'navigation.expenseTemplates', url: { path: '/templates/expense' } },
+      { icon: 'ri-add-circle-line', titleKey: 'navigation.newCharge', url: { path: '/charges/create' } },
     ],
   },
 ]
 
-const baseNoDataSuggestions: Suggestion[] = [
-  { icon: 'ri-home-4-line', title: 'Panel', url: { path: '/' } },
-  { icon: 'ri-file-list-3-line', title: 'Tahakkuklar', url: { path: '/charges' } },
-  { icon: 'ri-wallet-3-line', title: 'Giderler', url: { path: '/expenses' } },
-  { icon: 'ri-receipt-line', title: 'Tahsilatlar', url: { path: '/receipts' } },
-  { icon: 'ri-secure-payment-line', title: 'Odemeler', url: { path: '/payments' } },
-  { icon: 'ri-bar-chart-grouped-line', title: 'Raporlar', url: { path: '/reports' } },
-  { icon: 'ri-bank-card-line', title: 'Hesaplar', url: { path: '/accounts' } },
-  { icon: 'ri-wallet-line', title: 'Kasa/Banka', url: { path: '/cash-accounts' } },
-  { icon: 'ri-building-line', title: 'Daireler', url: { path: '/management/apartments' } },
-  { icon: 'ri-group-line', title: 'Kullanicilar', url: { path: '/management/users' } },
-  { icon: 'ri-store-2-line', title: 'Tedarikciler', url: { path: '/management/vendors' } },
-  { icon: 'ri-settings-3-line', title: 'Site Ayarlari', url: { path: '/management/site-settings' } },
-  { icon: 'ri-file-copy-2-line', title: 'Aidat Sablonlari', url: { path: '/templates/aidat' } },
-  { icon: 'ri-file-list-2-line', title: 'Gider Sablonlari', url: { path: '/templates/expense' } },
-  { icon: 'ri-lock-password-line', title: 'Sifre Degistir', url: { path: '/profile/password' } },
+const baseNoDataSuggestions: SuggestionSeed[] = [
+  { icon: 'ri-home-4-line', titleKey: 'navigation.dashboard', url: { path: '/' } },
+  { icon: 'ri-file-list-3-line', titleKey: 'navigation.charges', url: { path: '/charges' } },
+  { icon: 'ri-wallet-3-line', titleKey: 'navigation.expenses', url: { path: '/expenses' } },
+  { icon: 'ri-receipt-line', titleKey: 'navigation.receipts', url: { path: '/receipts' } },
+  { icon: 'ri-secure-payment-line', titleKey: 'navigation.payments', url: { path: '/payments' } },
+  { icon: 'ri-bar-chart-grouped-line', titleKey: 'navigation.reports', url: { path: '/reports' } },
+  { icon: 'ri-bank-card-line', titleKey: 'navigation.accounts', url: { path: '/accounts' } },
+  { icon: 'ri-wallet-line', titleKey: 'navigation.cashAccounts', url: { path: '/cash-accounts' } },
+  { icon: 'ri-building-line', titleKey: 'navigation.apartments', url: { path: '/management/apartments' } },
+  { icon: 'ri-group-line', titleKey: 'navigation.users', url: { path: '/management/users' } },
+  { icon: 'ri-store-2-line', titleKey: 'navigation.vendors', url: { path: '/management/vendors' } },
+  { icon: 'ri-settings-3-line', titleKey: 'navigation.siteSettings', url: { path: '/management/site-settings' } },
+  { icon: 'ri-file-copy-2-line', titleKey: 'navigation.aidatTemplates', url: { path: '/templates/aidat' } },
+  { icon: 'ri-file-list-2-line', titleKey: 'navigation.expenseTemplates', url: { path: '/templates/expense' } },
+  { icon: 'ri-lock-password-line', titleKey: 'navigation.passwordChange', url: { path: '/profile/password' } },
 ]
 
 const router = useRouter()
@@ -82,7 +94,7 @@ const searchQuery = ref('')
 const searchResult = ref<SearchResults[]>([])
 const isLoading = ref(false)
 
-const canAccessSuggestion = (suggestion: Suggestion) => {
+const canAccessSuggestion = (suggestion: SuggestionSeed | Suggestion) => {
   const path = typeof suggestion.url === 'string'
     ? suggestion.url
     : (suggestion.url as any)?.path
@@ -96,14 +108,26 @@ const canAccessSuggestion = (suggestion: Suggestion) => {
 const suggestionGroups = computed<SuggestionGroup[]>(() => {
   return baseSuggestionGroups
     .map(group => ({
-      ...group,
-      content: group.content.filter(canAccessSuggestion),
+      title: t(group.titleKey),
+      content: group.content
+        .filter(canAccessSuggestion)
+        .map(item => ({
+          icon: item.icon,
+          title: t(item.titleKey),
+          url: item.url,
+        })),
     }))
     .filter(group => group.content.length > 0)
 })
 
 const noDataSuggestions = computed<Suggestion[]>(() => {
-  return baseNoDataSuggestions.filter(canAccessSuggestion)
+  return baseNoDataSuggestions
+    .filter(canAccessSuggestion)
+    .map(item => ({
+      icon: item.icon,
+      title: t(item.titleKey),
+      url: item.url,
+    }))
 })
 
 const fetchResults = () => {
@@ -156,7 +180,7 @@ const LazyAppBarSearch = defineAsyncComponent(() => import('@core/components/App
       class="d-none d-md-flex text-disabled text-body-1 gap-x-2"
       @click="Shepherd.activeTour?.cancel()"
     >
-      <div>Arama</div>
+      <div>{{ $t('navigation.search') }}</div>
       <div class="meta-key">?K</div>
     </div>
   </div>
@@ -204,7 +228,7 @@ const LazyAppBarSearch = defineAsyncComponent(() => import('@core/components/App
 
     <template #noDataSuggestion>
       <div class="mt-6">
-        <div class="text-center text-disabled py-2">Bunlari deneyin</div>
+        <div class="text-center text-disabled py-2">{{ $t('navigation.tryThese') }}</div>
         <h6
           v-for="suggestion in noDataSuggestions"
           :key="suggestion.title"

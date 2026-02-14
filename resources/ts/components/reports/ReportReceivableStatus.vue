@@ -20,6 +20,7 @@ const loading = ref(false)
 const errorMessage = ref('')
 const report = ref<ReceivableStatusResponse['data'] | null>(null)
 const { withAbort } = useAbortOnUnmount()
+const { t } = useI18n({ useScope: 'global' })
 
 const loadReport = async () => {
   loading.value = true
@@ -33,7 +34,7 @@ const loadReport = async () => {
     if (isAbortError(error))
       return
 
-    errorMessage.value = getApiErrorMessage(error, 'Alacak durumu raporu alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, t('reports.receivableStatus.error'))
   }
   finally {
     loading.value = false
@@ -53,7 +54,7 @@ const downloadPdf = () => {
         :loading="loading"
         @click="loadReport"
       >
-        Raporu Getir
+        {{ $t('common.reportFetch') }}
       </VBtn>
     </div>
 
@@ -72,29 +73,29 @@ const downloadPdf = () => {
           color="warning"
           variant="tonal"
         >
-          Genel Borc: {{ formatCurrency(report.grand_total) }}
+          {{ $t('reports.receivableStatus.grandDebt') }}: {{ formatCurrency(report.grand_total) }}
         </VChip>
         <VBtn
           variant="outlined"
           prepend-icon="ri-download-line"
           @click="downloadPdf"
         >
-          PDF
+          {{ $t('common.pdf') }}
         </VBtn>
       </div>
 
       <VTable density="comfortable">
         <thead>
           <tr>
-            <th>Tedarikci</th>
+            <th>{{ $t('common.vendor') }}</th>
             <th class="text-right">
-              Toplam
+              {{ $t('common.total') }}
             </th>
             <th class="text-right">
-              Odenen
+              {{ $t('common.paid') }}
             </th>
             <th class="text-right">
-              Kalan
+              {{ $t('common.remaining') }}
             </th>
           </tr>
         </thead>

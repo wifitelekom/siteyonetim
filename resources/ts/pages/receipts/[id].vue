@@ -50,7 +50,7 @@ const fetchDetail = async () => {
     detail.value = response.data
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Tahsilat detayi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Tahsilat detayı alınamadı.')
   }
   finally {
     loading.value = false
@@ -66,7 +66,7 @@ onMounted(fetchDetail)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Tahsilat Detayi
+            {{ $t('pages.receipts.detailTitle') }}
           </h4>
           <p class="text-medium-emphasis mb-0">
             Makbuz #{{ detail?.receipt_no ?? '-' }}
@@ -102,21 +102,21 @@ onMounted(fetchDetail)
               cols="12"
               md="4"
             >
-              <div class="text-caption text-medium-emphasis">Makbuz No</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.receiptNo') }}</div>
               <div class="font-weight-medium">#{{ detail.receipt_no }}</div>
             </VCol>
             <VCol
               cols="12"
               md="4"
             >
-              <div class="text-caption text-medium-emphasis">Tarih</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.date') }}</div>
               <div class="font-weight-medium">{{ formatDate(detail.paid_at) }}</div>
             </VCol>
             <VCol
               cols="12"
               md="4"
             >
-              <div class="text-caption text-medium-emphasis">Yontem</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.method') }}</div>
               <div class="font-weight-medium">{{ methodLabel(detail.method) }}</div>
             </VCol>
 
@@ -124,14 +124,14 @@ onMounted(fetchDetail)
               cols="12"
               md="6"
             >
-              <div class="text-caption text-medium-emphasis">Daire</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.apartment') }}</div>
               <div class="font-weight-medium">{{ detail.apartment?.label ?? '-' }}</div>
             </VCol>
             <VCol
               cols="12"
               md="6"
             >
-              <div class="text-caption text-medium-emphasis">Kasa/Banka</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.cashBank') }}</div>
               <div class="font-weight-medium">{{ detail.cash_account?.name ?? '-' }}</div>
             </VCol>
 
@@ -139,19 +139,19 @@ onMounted(fetchDetail)
               cols="12"
               md="6"
             >
-              <div class="text-caption text-medium-emphasis">Toplam Tutar</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.totalAmount') }}</div>
               <div class="text-h6 text-success">{{ formatCurrency(detail.total_amount) }}</div>
             </VCol>
             <VCol
               cols="12"
               md="6"
             >
-              <div class="text-caption text-medium-emphasis">Olusturan</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.createdBy') }}</div>
               <div class="font-weight-medium">{{ detail.creator?.name ?? '-' }}</div>
             </VCol>
 
             <VCol cols="12">
-              <div class="text-caption text-medium-emphasis">Aciklama</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.description') }}</div>
               <div>{{ detail.description || '-' }}</div>
             </VCol>
           </VRow>
@@ -166,10 +166,10 @@ onMounted(fetchDetail)
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Hesap</th>
-              <th>Donem</th>
-              <th>Aciklama</th>
-              <th class="text-right">Tutar</th>
+              <th>{{ $t('common.account') }}</th>
+              <th>{{ $t('common.period') }}</th>
+              <th>{{ $t('common.description') }}</th>
+              <th class="text-right">{{ $t('common.amount') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -187,7 +187,7 @@ onMounted(fetchDetail)
                 colspan="4"
                 class="text-center text-medium-emphasis py-6"
               >
-                Kalem bulunamadi.
+                {{ $t('common.noItems') }}
               </td>
             </tr>
           </tbody>

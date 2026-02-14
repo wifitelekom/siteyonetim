@@ -1,4 +1,5 @@
 import type { ApiErrorData } from '@/types/api'
+import { i18n } from '@/plugins/0.i18n'
 
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null
@@ -19,6 +20,9 @@ export const getApiErrorMessage = (error: unknown, fallback: string) => {
 
   if (typeof apiData?.message === 'string' && apiData.message.length > 0)
     return apiData.message
+
+  if (i18n.global.te(fallback))
+    return i18n.global.t(fallback)
 
   return fallback
 }

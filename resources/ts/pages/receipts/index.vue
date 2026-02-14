@@ -58,7 +58,7 @@ const fetchMeta = async () => {
     apartments.value = response.data.apartments
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Filtre verileri alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Filtre verileri alınamadı.')
   }
   finally {
     loadingMeta.value = false
@@ -84,7 +84,7 @@ const fetchReceipts = async (page = 1) => {
     pagination.value = response.meta
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Tahsilat listesi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Tahsilat listesi alınamadı.')
   }
   finally {
     loading.value = false
@@ -139,7 +139,7 @@ onMounted(async () => {
                 :items="apartments"
                 item-title="label"
                 item-value="id"
-                label="Daire"
+                :label="$t('common.apartment')"
                 clearable
               />
             </VCol>
@@ -151,7 +151,7 @@ onMounted(async () => {
               <VTextField
                 v-model="filters.from"
                 type="date"
-                label="Baslangic"
+                :label="$t('common.startDate')"
               />
             </VCol>
 
@@ -162,7 +162,7 @@ onMounted(async () => {
               <VTextField
                 v-model="filters.to"
                 type="date"
-                label="Bitis"
+                :label="$t('common.endDate')"
               />
             </VCol>
 
@@ -172,8 +172,8 @@ onMounted(async () => {
             >
               <VTextField
                 v-model="filters.search"
-                label="Arama"
-                placeholder="Makbuz no veya aciklama"
+                :label="$t('common.search')"
+                placeholder="Makbuz no veya açıklama"
               />
             </VCol>
 
@@ -183,13 +183,13 @@ onMounted(async () => {
                   variant="outlined"
                   @click="resetFilters"
                 >
-                  Temizle
+                  {{ $t('common.clear') }}
                 </VBtn>
                 <VBtn
                   color="primary"
                   @click="applyFilters"
                 >
-                  Filtrele
+                  {{ $t('common.filter') }}
                 </VBtn>
               </div>
             </VCol>
@@ -215,15 +215,15 @@ onMounted(async () => {
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Makbuz No</th>
-              <th>Tarih</th>
-              <th>Daire</th>
-              <th>Yontem / Kasa</th>
+              <th>{{ $t('common.receiptNo') }}</th>
+              <th>{{ $t('common.date') }}</th>
+              <th>{{ $t('common.apartment') }}</th>
+              <th>{{ $t('common.methodAndCash') }}</th>
               <th class="text-right">
                 Tutar
               </th>
               <th class="text-right">
-                Islemler
+                İşlemler
               </th>
             </tr>
           </thead>
@@ -262,14 +262,14 @@ onMounted(async () => {
                 colspan="6"
                 class="text-center text-medium-emphasis py-6"
               >
-                Kayit bulunamadi.
+                {{ $t('common.noRecords') }}
               </td>
             </tr>
           </tbody>
         </VTable>
 
         <VCardText class="d-flex justify-space-between align-center flex-wrap gap-3">
-          <span class="text-sm text-medium-emphasis">Toplam {{ pagination.total }} kayit</span>
+          <span class="text-sm text-medium-emphasis">{{ $t('common.totalRecords', { count: pagination.total }) }}</span>
 
           <VPagination
             :model-value="pagination.current_page"
@@ -282,3 +282,4 @@ onMounted(async () => {
     </VCol>
   </VRow>
 </template>
+

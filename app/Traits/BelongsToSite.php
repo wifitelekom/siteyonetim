@@ -3,6 +3,7 @@
 namespace App\Traits;
 
 use App\Models\Site;
+use App\Support\SiteContext;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -38,7 +39,7 @@ trait BelongsToSite
             return null;
         }
 
-        return auth()->user()?->site_id;
+        return SiteContext::resolveForUser(auth()->user());
     }
 
     public function site(): BelongsTo

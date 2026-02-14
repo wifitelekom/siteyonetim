@@ -21,6 +21,7 @@ interface ReportsMetaResponse {
 const activePanels = ref<number[]>([0])
 const loadingMeta = ref(false)
 const errorMessage = ref('')
+const { t } = useI18n({ useScope: 'global' })
 
 const cashAccounts = ref<ReportOptionItem[]>([])
 const accounts = ref<ReportOptionItem[]>([])
@@ -39,7 +40,7 @@ const fetchMeta = async () => {
     if (isAbortError(error))
       return
 
-    errorMessage.value = getApiErrorMessage(error, 'Rapor metadatasi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, t('reports.page.errors.metaLoadFailed'))
   }
   finally {
     loadingMeta.value = false
@@ -55,10 +56,10 @@ onMounted(fetchMeta)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Raporlar
+            {{ $t('reports.page.title') }}
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Finansal raporlarinizi tek ekrandan olusturun
+            {{ $t('reports.page.subtitle') }}
           </p>
         </div>
       </div>
@@ -81,7 +82,7 @@ onMounted(fetchMeta)
         v-model="activePanels"
         multiple
       >
-        <VExpansionPanel title="Kasa/Banka Ekstresi">
+        <VExpansionPanel :title="$t('reports.page.panels.cashStatement')">
           <VExpansionPanelText>
             <ReportCashStatement
               :cash-accounts="cashAccounts"
@@ -90,7 +91,7 @@ onMounted(fetchMeta)
           </VExpansionPanelText>
         </VExpansionPanel>
 
-        <VExpansionPanel title="Hesap Ekstresi">
+        <VExpansionPanel :title="$t('reports.page.panels.accountStatement')">
           <VExpansionPanelText>
             <ReportAccountStatement
               :accounts="accounts"
@@ -99,31 +100,31 @@ onMounted(fetchMeta)
           </VExpansionPanelText>
         </VExpansionPanel>
 
-        <VExpansionPanel title="Tahsilat Raporu">
+        <VExpansionPanel :title="$t('reports.page.panels.collectionReport')">
           <VExpansionPanelText>
             <ReportCollections />
           </VExpansionPanelText>
         </VExpansionPanel>
 
-        <VExpansionPanel title="Odeme Raporu">
+        <VExpansionPanel :title="$t('reports.page.panels.paymentReport')">
           <VExpansionPanelText>
             <ReportPayments />
           </VExpansionPanelText>
         </VExpansionPanel>
 
-        <VExpansionPanel title="Borc Durumu">
+        <VExpansionPanel :title="$t('reports.page.panels.debtStatus')">
           <VExpansionPanelText>
             <ReportDebtStatus />
           </VExpansionPanelText>
         </VExpansionPanel>
 
-        <VExpansionPanel title="Alacak Durumu">
+        <VExpansionPanel :title="$t('reports.page.panels.receivableStatus')">
           <VExpansionPanelText>
             <ReportReceivableStatus />
           </VExpansionPanelText>
         </VExpansionPanel>
 
-        <VExpansionPanel title="Tahakkuk Listesi">
+        <VExpansionPanel :title="$t('reports.page.panels.chargeList')">
           <VExpansionPanelText>
             <ReportChargeList />
           </VExpansionPanelText>

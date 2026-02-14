@@ -23,6 +23,7 @@ const loading = ref(false)
 const errorMessage = ref('')
 const report = ref<DebtStatusResponse['data'] | null>(null)
 const { withAbort } = useAbortOnUnmount()
+const { t } = useI18n({ useScope: 'global' })
 
 const loadReport = async () => {
   loading.value = true
@@ -36,7 +37,7 @@ const loadReport = async () => {
     if (isAbortError(error))
       return
 
-    errorMessage.value = getApiErrorMessage(error, 'Borc durumu raporu alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, t('reports.debtStatus.error'))
   }
   finally {
     loading.value = false
@@ -56,7 +57,7 @@ const downloadPdf = () => {
         :loading="loading"
         @click="loadReport"
       >
-        Raporu Getir
+        {{ $t('common.reportFetch') }}
       </VBtn>
     </div>
 
@@ -75,33 +76,33 @@ const downloadPdf = () => {
           color="error"
           variant="tonal"
         >
-          Genel Kalan Borc: {{ formatCurrency(report.grand_total) }}
+          {{ $t('reports.debtStatus.grandRemainingDebt') }}: {{ formatCurrency(report.grand_total) }}
         </VChip>
         <VBtn
           variant="outlined"
           prepend-icon="ri-download-line"
           @click="downloadPdf"
         >
-          PDF
+          {{ $t('common.pdf') }}
         </VBtn>
       </div>
 
       <VTable density="comfortable">
         <thead>
           <tr>
-            <th>Daire</th>
-            <th>Sakin</th>
+            <th>{{ $t('common.apartment') }}</th>
+            <th>{{ $t('common.resident') }}</th>
             <th class="text-right">
-              Toplam
+              {{ $t('common.total') }}
             </th>
             <th class="text-right">
-              Odenen
+              {{ $t('common.paid') }}
             </th>
             <th class="text-right">
-              Kalan
+              {{ $t('common.remaining') }}
             </th>
             <th class="text-right">
-              Gecikmis
+              {{ $t('reports.debtStatus.overdue') }}
             </th>
           </tr>
         </thead>

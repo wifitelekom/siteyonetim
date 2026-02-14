@@ -7,17 +7,19 @@ const loading = ref(false)
 const errorMessage = ref('')
 const successMessage = ref('')
 const fieldErrors = ref<Record<string, string[]>>({})
+const { t } = useI18n({ useScope: 'global' })
 
 const form = ref({
   current_password: '',
   password: '',
   password_confirmation: '',
 })
+
 const formRef = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null)
 
 const currentPasswordRules = [requiredRule()]
 const passwordRules = [requiredRule(), minLengthRule(8)]
-const passwordConfirmationRules = [requiredRule(), matchRule(() => form.value.password, 'Sifreler eslesmiyor.')]
+const passwordConfirmationRules = [requiredRule(), matchRule(() => form.value.password, t('profile.passwordsDoNotMatch'))]
 
 const submit = async () => {
   const validation = await formRef.value?.validate()
@@ -40,10 +42,10 @@ const submit = async () => {
       password: '',
       password_confirmation: '',
     }
-    successMessage.value = 'Sifreniz basariyla guncellendi.'
+    successMessage.value = t('profile.updated')
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Sifre guncellenemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'profile.updateFailed')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -58,10 +60,10 @@ const submit = async () => {
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Sifre Degistir
+            {{ $t('navigation.passwordChange') }}
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Hesap sifrenizi guvenli sekilde guncelleyin
+            {{ $t('profile.subtitle') }}
           </p>
         </div>
       </div>
@@ -103,7 +105,7 @@ const submit = async () => {
                 <VTextField
                   v-model="form.current_password"
                   type="password"
-                  label="Mevcut Sifre"
+                  :label="$t('profile.currentPassword')"
                   :rules="currentPasswordRules"
                   :error-messages="fieldErrors.current_password ?? []"
                 />
@@ -116,7 +118,7 @@ const submit = async () => {
                 <VTextField
                   v-model="form.password"
                   type="password"
-                  label="Yeni Sifre"
+                  :label="$t('profile.newPassword')"
                   :rules="passwordRules"
                   :error-messages="fieldErrors.password ?? []"
                 />
@@ -129,7 +131,7 @@ const submit = async () => {
                 <VTextField
                   v-model="form.password_confirmation"
                   type="password"
-                  label="Yeni Sifre Tekrar"
+                  :label="$t('profile.repeatNewPassword')"
                   :rules="passwordConfirmationRules"
                   :error-messages="fieldErrors.password_confirmation ?? []"
                 />
@@ -143,7 +145,7 @@ const submit = async () => {
                     :loading="loading"
                     :disabled="loading"
                   >
-                    Guncelle
+                    {{ $t('common.update') }}
                   </VBtn>
                 </div>
               </VCol>
@@ -154,4 +156,3 @@ const submit = async () => {
     </VCol>
   </VRow>
 </template>
-

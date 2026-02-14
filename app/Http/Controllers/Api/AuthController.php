@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Site;
+use App\Support\SiteContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -47,14 +49,32 @@ class AuthController extends Controller
         }
 
         $user = $request->user();
+        $activeSiteId = SiteContext::resolveForUser($user);
 
-        if (!$user->site_id && !$user->hasRole('super-admin')) {
+        if (!$activeSiteId && !$user->hasRole('super-admin')) {
             return response()->json([
                 'message' => 'Kullanici bir siteye atanmamis.',
             ], 403);
         }
 
         return response()->json([
+            'data' => $this->mapAuthenticatedUser($request),
+        ]);
+    }
+
+    public function setSiteContext(Request $request): JsonResponse
+    {
+        abort_unless(Auth::check(), 401);
+        abort_unless($request->user()->hasRole('super-admin'), 403);
+
+        $validated = $request->validate([
+            'site_id' => ['nullable', 'integer', 'exists:sites,id'],
+        ]);
+
+        SiteContext::set($request, isset($validated['site_id']) ? (int) $validated['site_id'] : null);
+
+        return response()->json([
+            'message' => 'Site baglami guncellendi.',
             'data' => $this->mapAuthenticatedUser($request),
         ]);
     }
@@ -86,7 +106,11 @@ class AuthController extends Controller
 
     private function mapAuthenticatedUser(Request $request): array
     {
-        $user = $request->user()->loadMissing('site');
+        $user = $request->user();
+        $activeSiteId = SiteContext::resolveForUser($user);
+        $activeSite = $activeSiteId
+            ? Site::query()->select(['id', 'name'])->find($activeSiteId)
+            : null;
         $permissions = $user->getAllPermissions()->pluck('name')->values()->all();
         $roles = $user->roles()->pluck('name')->values()->all();
 
@@ -97,13 +121,13 @@ class AuthController extends Controller
                 'email' => $user->email,
                 'phone' => $user->phone,
                 'tc_kimlik' => $user->tc_kimlik,
-                'site_id' => $user->site_id,
+                'site_id' => $activeSiteId,
             ],
             'roles' => $roles,
             'permissions' => $permissions,
-            'site' => $user->site ? [
-                'id' => $user->site->id,
-                'name' => $user->site->name,
+            'site' => $activeSite ? [
+                'id' => $activeSite->id,
+                'name' => $activeSite->name,
             ] : null,
         ];
     }

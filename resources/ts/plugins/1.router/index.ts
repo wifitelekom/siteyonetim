@@ -19,7 +19,7 @@ function recursiveLayouts(route: RouteRecordRaw): RouteRecordRaw {
 }
 
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory('/'),
   scrollBehavior(to) {
     if (to.hash)
       return { el: to.hash, top: 60 }
@@ -47,6 +47,15 @@ router.beforeEach(async to => {
   if (authSession.isAuthenticated.value && to.path === '/login') {
     const redirectPath = typeof to.query.redirect === 'string' ? to.query.redirect : '/'
     return redirectPath
+  }
+
+  if (
+    authSession.isAuthenticated.value
+    && authSession.hasRole('super-admin')
+    && !authSession.site.value
+    && !to.path.startsWith('/super/sites')
+  ) {
+    return '/super/sites'
   }
 
   if (authSession.isAuthenticated.value && !canAccessPath(to.path, authSession))

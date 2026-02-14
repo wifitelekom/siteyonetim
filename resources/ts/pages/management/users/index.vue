@@ -61,7 +61,7 @@ const fetchMeta = async () => {
     roleOptions.value = response.data.roles
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Filtre verileri alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Filtre verileri alınamadı.')
   }
   finally {
     loadingMeta.value = false
@@ -85,7 +85,7 @@ const fetchUsers = async (page = 1) => {
     pagination.value = response.meta
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Kullanici listesi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Kullanıcı listesi alınamadı.')
   }
   finally {
     loading.value = false
@@ -114,7 +114,7 @@ const deleteUser = async (row: UserItem) => {
     await fetchUsers(pagination.value.current_page)
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Kullanici silinemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'Kullanıcı silinemedi.')
   }
   finally {
     deletingId.value = null
@@ -132,10 +132,10 @@ onMounted(async () => {
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Kullanicilar
+            Kullanıcılar
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Site kullanicilarini yonetin
+            Site kullanıcılarini yönetin
           </p>
         </div>
 
@@ -144,7 +144,7 @@ onMounted(async () => {
           prepend-icon="ri-user-add-line"
           to="/management/users/create"
         >
-          Yeni Kullanici
+          {{ $t('pages.users.newTitle') }}
         </VBtn>
       </div>
     </VCol>
@@ -173,7 +173,7 @@ onMounted(async () => {
             >
               <VTextField
                 v-model="filters.search"
-                label="Arama"
+                :label="$t('common.search')"
                 placeholder="Ad, e-posta, telefon, TC"
               />
             </VCol>
@@ -184,13 +184,13 @@ onMounted(async () => {
                   variant="outlined"
                   @click="resetFilters"
                 >
-                  Temizle
+                  {{ $t('common.clear') }}
                 </VBtn>
                 <VBtn
                   color="primary"
                   @click="applyFilters"
                 >
-                  Filtrele
+                  {{ $t('common.filter') }}
                 </VBtn>
               </div>
             </VCol>
@@ -217,11 +217,11 @@ onMounted(async () => {
           <thead>
             <tr>
               <th>Ad Soyad</th>
-              <th>Iletisim</th>
+              <th>{{ $t('common.contact') }}</th>
               <th>Rol</th>
-              <th>Daire</th>
+              <th>{{ $t('common.apartment') }}</th>
               <th class="text-right">
-                Islemler
+                İşlemler
               </th>
             </tr>
           </thead>
@@ -281,14 +281,14 @@ onMounted(async () => {
                 colspan="5"
                 class="text-center text-medium-emphasis py-6"
               >
-                Kayit bulunamadi.
+                {{ $t('common.noRecords') }}
               </td>
             </tr>
           </tbody>
         </VTable>
 
         <VCardText class="d-flex justify-space-between align-center flex-wrap gap-3">
-          <span class="text-sm text-medium-emphasis">Toplam {{ pagination.total }} kayit</span>
+          <span class="text-sm text-medium-emphasis">{{ $t('common.totalRecords', { count: pagination.total }) }}</span>
 
           <VPagination
             :model-value="pagination.current_page"
@@ -301,3 +301,4 @@ onMounted(async () => {
     </VCol>
   </VRow>
 </template>
+

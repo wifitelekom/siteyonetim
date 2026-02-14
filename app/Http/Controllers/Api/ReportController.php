@@ -30,7 +30,7 @@ class ReportController extends Controller
             ->map(fn (CashAccount $account) => [
                 'id' => $account->id,
                 'name' => $account->name,
-                'type' => (string) $account->type,
+                'type' => $this->enumToString($account->type),
             ])->values();
 
         $accounts = Account::query()
@@ -78,7 +78,7 @@ class ReportController extends Controller
                 'account' => [
                     'id' => $data['account']->id,
                     'name' => $data['account']->name,
-                    'type' => (string) $data['account']->type,
+                    'type' => $this->enumToString($data['account']->type),
                 ],
                 'from' => $data['from']->toDateString(),
                 'to' => $data['to']->toDateString(),
@@ -415,5 +415,18 @@ class ReportController extends Controller
     private function authorizeView(Request $request): void
     {
         abort_unless($request->user()->can('reports.view'), 403);
+    }
+
+    private function enumToString(mixed $value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if ($value instanceof \BackedEnum) {
+            return (string) $value->value;
+        }
+
+        return (string) $value;
     }
 }

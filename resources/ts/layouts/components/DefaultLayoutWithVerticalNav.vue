@@ -14,21 +14,47 @@ import NavBarI18n from '@core/components/I18n.vue'
 
 // @layouts plugin
 import { VerticalNavLayout } from '@layouts'
+import type { VerticalNavItems } from '@layouts/types'
 
 const configStore = useConfigStore()
 const authSession = useAuthSession()
 
-const navItems = computed(() => {
-  return baseNavItems.filter((item: any) => {
-    const targetPath = typeof item?.to === 'string'
-      ? item.to
-      : item?.to?.path
+type NavItem = {
+  to?: string | { path?: string | null } | null
+  children?: NavItem[]
+  [key: string]: unknown
+}
 
-    if (!targetPath)
-      return true
+const resolveTargetPath = (item: NavItem): string | null => {
+  if (typeof item.to === 'string')
+    return item.to
 
-    return canAccessPath(targetPath, authSession)
+  if (item.to && typeof item.to === 'object' && 'path' in item.to)
+    return typeof item.to.path === 'string' ? item.to.path : null
+
+  return null
+}
+
+const filterAccessibleNavItems = (items: NavItem[]): NavItem[] => {
+  return items.flatMap(item => {
+    if (Array.isArray(item.children)) {
+      const children = filterAccessibleNavItems(item.children)
+      if (!children.length)
+        return []
+
+      return [{ ...item, children }]
+    }
+
+    const targetPath = resolveTargetPath(item)
+    if (!targetPath || canAccessPath(targetPath, authSession))
+      return [item]
+
+    return []
   })
+}
+
+const navItems = computed<VerticalNavItems>(() => {
+  return filterAccessibleNavItems(baseNavItems as NavItem[]) as unknown as VerticalNavItems
 })
 
 // ℹ️ Provide animation name for vertical nav collapse icon.
@@ -60,14 +86,13 @@ watch([
 
         <NavSearchBar class="ms-2" />
 
-        <NavbarThemeSwitcher />
-
         <VSpacer />
 
         <NavBarI18n
           v-if="themeConfig.app.i18n.enable && themeConfig.app.i18n.langConfig?.length"
           :languages="themeConfig.app.i18n.langConfig"
         />
+        <NavbarThemeSwitcher class="me-2" />
         <UserProfile />
       </div>
     </template>

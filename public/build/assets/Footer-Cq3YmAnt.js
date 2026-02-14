@@ -1,0 +1,1 @@
+import{_ as e}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{Q as t,V as s,O as o}from"./vendor-DfCbaU-T.js";const r={},a={class:"h-100 d-flex align-center text-medium-emphasis text-base"};function n(c,i){return t(),s("div",a," © "+o(new Date().getFullYear())+" Site Yönetim ",1)}const m=e(r,[["render",n]]);export{m as default};

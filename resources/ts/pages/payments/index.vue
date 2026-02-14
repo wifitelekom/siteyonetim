@@ -57,7 +57,7 @@ const fetchMeta = async () => {
     vendors.value = response.data.vendors
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Filtre verileri alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Filtre verileri alınamadı.')
   }
   finally {
     loadingMeta.value = false
@@ -83,7 +83,7 @@ const fetchPayments = async (page = 1) => {
     pagination.value = response.meta
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Odeme listesi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Ödeme listesi alınamadı.')
   }
   finally {
     loading.value = false
@@ -116,10 +116,10 @@ onMounted(async () => {
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Odemeler
+            Ödemeler
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Tedarikci odeme hareketlerini inceleyin
+            Tedarikçi ödeme hareketlerini inceleyin
           </p>
         </div>
       </div>
@@ -138,7 +138,7 @@ onMounted(async () => {
                 :items="vendors"
                 item-title="label"
                 item-value="id"
-                label="Tedarikci"
+                :label="$t('common.vendor')"
                 clearable
               />
             </VCol>
@@ -150,7 +150,7 @@ onMounted(async () => {
               <VTextField
                 v-model="filters.from"
                 type="date"
-                label="Baslangic"
+                :label="$t('common.startDate')"
               />
             </VCol>
 
@@ -161,7 +161,7 @@ onMounted(async () => {
               <VTextField
                 v-model="filters.to"
                 type="date"
-                label="Bitis"
+                :label="$t('common.endDate')"
               />
             </VCol>
 
@@ -171,8 +171,8 @@ onMounted(async () => {
             >
               <VTextField
                 v-model="filters.search"
-                label="Arama"
-                placeholder="Aciklama veya tedarikci"
+                :label="$t('common.search')"
+                :placeholder="$t('common.searchDescriptionOrVendor')"
               />
             </VCol>
 
@@ -182,13 +182,13 @@ onMounted(async () => {
                   variant="outlined"
                   @click="resetFilters"
                 >
-                  Temizle
+                  {{ $t('common.clear') }}
                 </VBtn>
                 <VBtn
                   color="primary"
                   @click="applyFilters"
                 >
-                  Filtrele
+                  {{ $t('common.filter') }}
                 </VBtn>
               </div>
             </VCol>
@@ -214,11 +214,11 @@ onMounted(async () => {
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Tarih</th>
-              <th>Tedarikci</th>
-              <th>Yontem / Kasa</th>
-              <th class="text-right">Tutar</th>
-              <th class="text-right">Islemler</th>
+              <th>{{ $t('common.date') }}</th>
+              <th>{{ $t('common.vendor') }}</th>
+              <th>{{ $t('common.methodAndCash') }}</th>
+              <th class="text-right">{{ $t('common.amount') }}</th>
+              <th class="text-right">{{ $t('common.actions') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -253,14 +253,14 @@ onMounted(async () => {
                 colspan="5"
                 class="text-center text-medium-emphasis py-6"
               >
-                Kayit bulunamadi.
+                {{ $t('common.noRecords') }}
               </td>
             </tr>
           </tbody>
         </VTable>
 
         <VCardText class="d-flex justify-space-between align-center flex-wrap gap-3">
-          <span class="text-sm text-medium-emphasis">Toplam {{ pagination.total }} kayit</span>
+          <span class="text-sm text-medium-emphasis">{{ $t('common.totalRecords', { count: pagination.total }) }}</span>
 
           <VPagination
             :model-value="pagination.current_page"
@@ -273,3 +273,4 @@ onMounted(async () => {
     </VCol>
   </VRow>
 </template>
+

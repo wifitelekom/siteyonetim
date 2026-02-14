@@ -47,7 +47,7 @@ const fetchDetail = async () => {
     detail.value = response.data
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Odeme detayi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Ödeme detayı alınamadı.')
   }
   finally {
     loading.value = false
@@ -63,10 +63,10 @@ onMounted(fetchDetail)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Odeme Detayi
+            {{ $t('pages.payments.detailTitle') }}
           </h4>
           <p class="text-medium-emphasis mb-0">
-            {{ detail?.vendor?.name ?? 'Tedarikci yok' }}
+            {{ detail?.vendor?.name ?? $t('common.noVendor') }}
           </p>
         </div>
 
@@ -99,21 +99,21 @@ onMounted(fetchDetail)
               cols="12"
               md="4"
             >
-              <div class="text-caption text-medium-emphasis">Tarih</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.date') }}</div>
               <div class="font-weight-medium">{{ formatDate(detail.paid_at) }}</div>
             </VCol>
             <VCol
               cols="12"
               md="4"
             >
-              <div class="text-caption text-medium-emphasis">Yontem</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.method') }}</div>
               <div class="font-weight-medium">{{ methodLabel(detail.method) }}</div>
             </VCol>
             <VCol
               cols="12"
               md="4"
             >
-              <div class="text-caption text-medium-emphasis">Kasa/Banka</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.cashBank') }}</div>
               <div class="font-weight-medium">{{ detail.cash_account?.name ?? '-' }}</div>
             </VCol>
 
@@ -121,19 +121,19 @@ onMounted(fetchDetail)
               cols="12"
               md="6"
             >
-              <div class="text-caption text-medium-emphasis">Toplam Tutar</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.totalAmount') }}</div>
               <div class="text-h6 text-error">{{ formatCurrency(detail.total_amount) }}</div>
             </VCol>
             <VCol
               cols="12"
               md="6"
             >
-              <div class="text-caption text-medium-emphasis">Olusturan</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.createdBy') }}</div>
               <div class="font-weight-medium">{{ detail.creator?.name ?? '-' }}</div>
             </VCol>
 
             <VCol cols="12">
-              <div class="text-caption text-medium-emphasis">Aciklama</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.description') }}</div>
               <div>{{ detail.description || '-' }}</div>
             </VCol>
           </VRow>
@@ -143,14 +143,14 @@ onMounted(fetchDetail)
 
     <VCol cols="12">
       <VCard :loading="loading">
-        <VCardItem title="Odeme Kalemleri" />
+        <VCardItem title="Ödeme Kalemleri" />
 
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Gider</th>
-              <th>Hesap</th>
-              <th class="text-right">Tutar</th>
+              <th>{{ $t('common.expense') }}</th>
+              <th>{{ $t('common.account') }}</th>
+              <th class="text-right">{{ $t('common.amount') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -167,7 +167,7 @@ onMounted(fetchDetail)
                 colspan="3"
                 class="text-center text-medium-emphasis py-6"
               >
-                Kalem bulunamadi.
+                {{ $t('common.noItems') }}
               </td>
             </tr>
           </tbody>

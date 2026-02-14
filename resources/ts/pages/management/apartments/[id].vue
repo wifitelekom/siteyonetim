@@ -83,7 +83,7 @@ const fetchDetail = async () => {
       residentForm.value.relation_type = relationTypes.value[0]?.value ?? 'owner'
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Daire detayi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Daire detayı alınamadı.')
   }
   finally {
     loading.value = false
@@ -130,7 +130,7 @@ const removeResident = async (userId: number) => {
     await fetchDetail()
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Sakin kaldirilamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Sakin kaldırılamadı.')
   }
   finally {
     removingResidentId.value = null
@@ -146,7 +146,7 @@ onMounted(fetchDetail)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Daire Detayi
+            {{ $t('pages.apartments.detailTitle') }}
           </h4>
           <p class="text-medium-emphasis mb-0">
             {{ detail?.full_label ?? '-' }}
@@ -164,7 +164,7 @@ onMounted(fetchDetail)
             color="primary"
             :to="`/management/apartments/${apartmentId}/edit`"
           >
-            Duzenle
+            Düzenle
           </VBtn>
         </div>
       </div>
@@ -215,7 +215,7 @@ onMounted(fetchDetail)
               </template>
             </VListItem>
             <VListItem>
-              <VListItemTitle>Arsa Payi</VListItemTitle>
+              <VListItemTitle>{{ $t('common.landShare') }}</VListItemTitle>
               <template #append>
                 <span>{{ detail.arsa_payi ?? '-' }}</span>
               </template>
@@ -228,7 +228,7 @@ onMounted(fetchDetail)
                   :color="detail.is_active ? 'success' : 'secondary'"
                   variant="tonal"
                 >
-                  {{ detail.is_active ? 'Aktif' : 'Pasif' }}
+                  {{ detail.is_active ? $t('common.active') : $t('common.passive') }}
                 </VChip>
               </template>
             </VListItem>
@@ -258,7 +258,7 @@ onMounted(fetchDetail)
                   :items="availableUsers"
                   item-title="name"
                   item-value="id"
-                  label="Kullanici"
+                  :label="$t('common.user')"
                   :rules="residentUserRules"
                   :error-messages="residentErrors.user_id ?? []"
                 />
@@ -272,7 +272,7 @@ onMounted(fetchDetail)
                   :items="relationTypes"
                   item-title="label"
                   item-value="value"
-                  label="Tur"
+                  :label="$t('common.type')"
                   :rules="residentRelationRules"
                   :error-messages="residentErrors.relation_type ?? []"
                 />
@@ -284,7 +284,7 @@ onMounted(fetchDetail)
                 <VTextField
                   v-model="residentForm.start_date"
                   type="date"
-                  label="Baslangic"
+                  :label="$t('common.startDate')"
                   :error-messages="residentErrors.start_date ?? []"
                 />
               </VCol>
@@ -311,8 +311,8 @@ onMounted(fetchDetail)
           <thead>
             <tr>
               <th>Ad</th>
-              <th>Tur</th>
-              <th>Baslangic</th>
+              <th>{{ $t('common.type') }}</th>
+              <th>{{ $t('common.startDate') }}</th>
               <th class="text-right">
                 Islem
               </th>
@@ -360,7 +360,7 @@ onMounted(fetchDetail)
                 colspan="4"
                 class="text-center text-medium-emphasis py-6"
               >
-                Sakin kaydi yok.
+                Sakin kaydı yok.
               </td>
             </tr>
           </tbody>
@@ -374,15 +374,15 @@ onMounted(fetchDetail)
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Donem</th>
-              <th>Vade</th>
+              <th>{{ $t('common.period') }}</th>
+              <th>{{ $t('common.due') }}</th>
               <th class="text-right">
                 Tutar
               </th>
               <th class="text-right">
                 Kalan
               </th>
-              <th>Durum</th>
+              <th>{{ $t('common.status') }}</th>
               <th class="text-right">
                 Islem
               </th>
@@ -426,7 +426,7 @@ onMounted(fetchDetail)
                 colspan="6"
                 class="text-center text-medium-emphasis py-6"
               >
-                Tahakkuk kaydi yok.
+                Tahakkuk kaydı yok.
               </td>
             </tr>
           </tbody>

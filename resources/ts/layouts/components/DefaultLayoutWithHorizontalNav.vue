@@ -12,30 +12,57 @@ import UserProfile from '@/layouts/components/UserProfile.vue'
 import NavBarI18n from '@core/components/I18n.vue'
 import { HorizontalNavLayout } from '@layouts'
 import { VNodeRenderer } from '@layouts/components/VNodeRenderer'
+import type { HorizontalNavItems } from '@layouts/types'
 
 const authSession = useAuthSession()
+const { t } = useI18n({ useScope: 'global' })
+
+type NavItem = {
+  to?: string | { path?: string | null } | null
+  children?: NavItem[]
+  [key: string]: unknown
+}
+
+const resolveTargetPath = (item: NavItem): string | null => {
+  if (typeof item.to === 'string')
+    return item.to
+
+  if (item.to && typeof item.to === 'object' && 'path' in item.to)
+    return typeof item.to.path === 'string' ? item.to.path : null
+
+  return null
+}
+
+const filterAccessibleNavItems = (items: NavItem[]): NavItem[] => {
+  return items.flatMap(item => {
+    if (Array.isArray(item.children)) {
+      const children = filterAccessibleNavItems(item.children)
+      if (!children.length)
+        return []
+
+      return [{ ...item, children }]
+    }
+
+    const targetPath = resolveTargetPath(item)
+    if (!targetPath || canAccessPath(targetPath, authSession))
+      return [item]
+
+    return []
+  })
+}
 
 const siteSubtitle = computed(() => {
   if (authSession.site.value?.name)
     return authSession.site.value.name
 
   if (authSession.hasRole('super-admin'))
-    return 'Merkezi Yonetim'
+    return t('navigation.centralManagement')
 
-  return 'Site Secili Degil'
+  return t('navigation.noSiteSelected')
 })
 
-const navItems = computed(() => {
-  return baseNavItems.filter((item: any) => {
-    const targetPath = typeof item?.to === 'string'
-      ? item.to
-      : item?.to?.path
-
-    if (!targetPath)
-      return true
-
-    return canAccessPath(targetPath, authSession)
-  })
+const navItems = computed<HorizontalNavItems>(() => {
+  return filterAccessibleNavItems(baseNavItems as NavItem[]) as unknown as HorizontalNavItems
 })
 </script>
 

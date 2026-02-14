@@ -72,7 +72,7 @@ const submit = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Daire olusturulamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Daire oluşturulamadı.')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -153,7 +153,7 @@ const submit = async () => {
               >
                 <VTextField
                   v-model="form.number"
-                  label="Daire No"
+                  :label="$t('common.apartmentNo')"
                   :rules="numberRules"
                   :error-messages="fieldErrors.number ?? []"
                 />
@@ -183,7 +183,7 @@ const submit = async () => {
                   type="number"
                   min="0"
                   step="0.000001"
-                  label="Arsa Payi"
+                  :label="$t('common.landShare')"
                   :rules="arsaPayiRules"
                   :error-messages="fieldErrors.arsa_payi ?? []"
                 />
@@ -192,7 +192,7 @@ const submit = async () => {
               <VCol cols="12">
                 <VSwitch
                   v-model="form.is_active"
-                  label="Aktif"
+                  :label="$t('common.active')"
                   color="primary"
                 />
               </VCol>
@@ -211,7 +211,7 @@ const submit = async () => {
                     :loading="loading"
                     :disabled="loading"
                   >
-                    Kaydet
+                    {{ $t('common.save') }}
                   </VBtn>
                 </div>
               </VCol>
@@ -222,4 +222,3 @@ const submit = async () => {
     </VCol>
   </VRow>
 </template>
-

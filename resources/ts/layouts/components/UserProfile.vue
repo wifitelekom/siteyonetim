@@ -4,10 +4,11 @@ import { useAuthSession } from '@/composables/useAuthSession'
 const router = useRouter()
 const authSession = useAuthSession()
 const isLoggingOut = ref(false)
+const { t } = useI18n({ useScope: 'global' })
 
-const userName = computed(() => authSession.user.value?.name ?? 'Kullanici')
-const roleName = computed(() => authSession.roles.value[0] ?? 'Kullanici')
-const siteName = computed(() => authSession.site.value?.name ?? 'Site atamasi yok')
+const userName = computed(() => authSession.user.value?.name ?? t('common.user'))
+const roleName = computed(() => authSession.roles.value[0] ?? t('common.user'))
+const siteName = computed(() => authSession.site.value?.name ?? t('navigation.noSiteAssigned'))
 const canManageSiteSettings = computed(() => authSession.roles.value.includes('admin') || authSession.roles.value.includes('super-admin'))
 const canManageSites = computed(() => authSession.can('sites.manage'))
 const userInitials = computed(() => {
@@ -92,7 +93,7 @@ onMounted(async () => {
                 size="22"
               />
             </template>
-            <VListItemTitle>Ana Sayfa</VListItemTitle>
+            <VListItemTitle>{{ $t('common.home') }}</VListItemTitle>
           </VListItem>
 
           <VListItem
@@ -105,7 +106,7 @@ onMounted(async () => {
                 size="22"
               />
             </template>
-            <VListItemTitle>Sifre Degistir</VListItemTitle>
+            <VListItemTitle>{{ $t('navigation.passwordChange') }}</VListItemTitle>
           </VListItem>
 
           <VListItem
@@ -119,7 +120,7 @@ onMounted(async () => {
                 size="22"
               />
             </template>
-            <VListItemTitle>Site Ayarlari</VListItemTitle>
+            <VListItemTitle>{{ $t('navigation.siteSettings') }}</VListItemTitle>
           </VListItem>
 
           <VListItem
@@ -133,7 +134,7 @@ onMounted(async () => {
                 size="22"
               />
             </template>
-            <VListItemTitle>Site Yonetimi</VListItemTitle>
+            <VListItemTitle>{{ $t('navigation.siteManagement') }}</VListItemTitle>
           </VListItem>
 
           <VListItem class="px-4 pt-2 pb-3">
@@ -146,7 +147,7 @@ onMounted(async () => {
               :disabled="isLoggingOut"
               @click="handleLogout"
             >
-              Cikis Yap
+              {{ $t('common.logout') }}
             </VBtn>
           </VListItem>
         </VList>

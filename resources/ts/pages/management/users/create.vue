@@ -41,7 +41,7 @@ const tcKimlikRules = [
   },
 ]
 const passwordRules = [requiredRule(), minLengthRule(8)]
-const passwordConfirmationRules = [requiredRule(), matchRule(() => form.value.password, 'Sifreler eslesmiyor.')]
+const passwordConfirmationRules = [requiredRule(), matchRule(() => form.value.password, 'Şifreler eşleşmiyor.')]
 const roleRules = [requiredRule()]
 
 const fetchMeta = async () => {
@@ -55,7 +55,7 @@ const fetchMeta = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Rol listesi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Rol listesi alınamadı.')
   }
   finally {
     loadingMeta.value = false
@@ -90,7 +90,7 @@ const submit = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Kullanici olusturulamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Kullanıcı oluşturulamadı.')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -107,10 +107,10 @@ onMounted(fetchMeta)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Yeni Kullanici
+            {{ $t('pages.users.newTitle') }}
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Kullanici kaydi olusturun
+            {{ $t('pages.users.createSubtitle') }}
           </p>
         </div>
 
@@ -199,7 +199,7 @@ onMounted(fetchMeta)
                 <VTextField
                   v-model="form.password"
                   type="password"
-                  label="Sifre"
+                  label="Şifre"
                   :rules="passwordRules"
                   :error-messages="fieldErrors.password ?? []"
                 />
@@ -212,7 +212,7 @@ onMounted(fetchMeta)
                 <VTextField
                   v-model="form.password_confirmation"
                   type="password"
-                  label="Sifre Tekrar"
+                  label="Şifre Tekrar"
                   :rules="passwordConfirmationRules"
                   :error-messages="fieldErrors.password_confirmation ?? []"
                 />
@@ -247,7 +247,7 @@ onMounted(fetchMeta)
                     :loading="loading"
                     :disabled="loading"
                   >
-                    Kaydet
+                    {{ $t('common.save') }}
                   </VBtn>
                 </div>
               </VCol>

@@ -56,7 +56,7 @@ const submit = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Tedarikci olusturulamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Tedarikçi oluşturulamadı.')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -71,10 +71,10 @@ const submit = async () => {
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Yeni Tedarikci
+            Yeni Tedarikçi
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Tedarikci bilgilerini girin
+            Tedarikçi bilgilerini girin
           </p>
         </div>
 
@@ -113,7 +113,7 @@ const submit = async () => {
               >
                 <VTextField
                   v-model="form.name"
-                  label="Firma Adi"
+                  :label="$t('common.companyName')"
                   :rules="nameRules"
                   :error-messages="fieldErrors.name ?? []"
                 />
@@ -177,7 +177,7 @@ const submit = async () => {
                     :loading="loading"
                     :disabled="loading"
                   >
-                    Kaydet
+                    {{ $t('common.save') }}
                   </VBtn>
                 </div>
               </VCol>

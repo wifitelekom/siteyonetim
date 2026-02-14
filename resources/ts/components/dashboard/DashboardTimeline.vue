@@ -37,8 +37,8 @@ const getTimelineIcon = (type: string) => {
 <template>
   <VCard>
     <VCardItem>
-      <VCardTitle>Vadesi Yaklasan Islemler</VCardTitle>
-      <VCardSubtitle>Onumuzdeki 30 gun</VCardSubtitle>
+      <VCardTitle>{{ $t('dashboard.timeline.title') }}</VCardTitle>
+      <VCardSubtitle>{{ $t('dashboard.timeline.subtitle') }}</VCardSubtitle>
     </VCardItem>
 
     <VCardText>
@@ -76,7 +76,7 @@ const getTimelineIcon = (type: string) => {
         v-if="items.length === 0"
         class="text-center text-medium-emphasis py-6"
       >
-        Yaklasan islem bulunamadi.
+        {{ $t('dashboard.timeline.empty') }}
       </div>
     </VCardText>
   </VCard>

@@ -12,6 +12,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n({ useScope: 'global' })
 
 const vuetifyTheme = useTheme()
 
@@ -92,16 +93,16 @@ const chartOptions = computed(() => {
 })
 
 const series = computed(() => [
-  { name: 'Tahsilat', data: props.data.map(d => d.income) },
-  { name: 'Odeme', data: props.data.map(d => d.expense) },
+  { name: t('dashboard.monthlyTrend.series.income'), data: props.data.map(d => d.income) },
+  { name: t('dashboard.monthlyTrend.series.expense'), data: props.data.map(d => d.expense) },
 ])
 </script>
 
 <template>
   <VCard>
     <VCardItem>
-      <VCardTitle>Aylik Gelir / Gider</VCardTitle>
-      <VCardSubtitle>Son 6 aylik tahsilat ve odeme karsilastirmasi</VCardSubtitle>
+      <VCardTitle>{{ $t('dashboard.monthlyTrend.title') }}</VCardTitle>
+      <VCardSubtitle>{{ $t('dashboard.monthlyTrend.subtitle') }}</VCardSubtitle>
     </VCardItem>
 
     <VCardText>

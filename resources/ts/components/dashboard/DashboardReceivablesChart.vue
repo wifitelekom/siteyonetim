@@ -9,6 +9,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n({ useScope: 'global' })
 
 const vuetifyTheme = useTheme()
 
@@ -21,7 +22,11 @@ const chartOptions = computed(() => {
       parentHeightOffset: 0,
       toolbar: { show: false },
     },
-    labels: ['Vadesi Gelmemis', 'Bugun Vadeli', 'Gecikimis'],
+    labels: [
+      t('dashboard.receivables.labels.notDue'),
+      t('dashboard.receivables.labels.dueToday'),
+      t('dashboard.receivables.labels.overdue'),
+    ],
     colors: [currentTheme.info, currentTheme.warning, currentTheme.error],
     stroke: { width: 0 },
     dataLabels: {
@@ -52,7 +57,7 @@ const chartOptions = computed(() => {
             },
             total: {
               show: true,
-              label: 'Toplam',
+              label: t('dashboard.receivables.total'),
               fontSize: '14px',
               formatter: () => {
                 return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(props.total)
@@ -78,8 +83,8 @@ const series = computed(() => [props.notDue, props.dueToday, props.overdue])
 <template>
   <VCard>
     <VCardItem>
-      <VCardTitle>Alacak Durumu</VCardTitle>
-      <VCardSubtitle>Vade bazli alacak dagilimi</VCardSubtitle>
+      <VCardTitle>{{ $t('dashboard.receivables.title') }}</VCardTitle>
+      <VCardSubtitle>{{ $t('dashboard.receivables.subtitle') }}</VCardSubtitle>
     </VCardItem>
 
     <VCardText>

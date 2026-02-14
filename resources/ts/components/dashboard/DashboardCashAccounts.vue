@@ -14,6 +14,7 @@ interface Props {
 }
 
 defineProps<Props>()
+const { t } = useI18n({ useScope: 'global' })
 
 const getAccountIcon = (type: string) => {
   switch (type) {
@@ -35,13 +36,13 @@ const getAccountColor = (type: string) => {
 <template>
   <VCard>
     <VCardItem>
-      <VCardTitle>Nakit Hesaplari</VCardTitle>
-      <VCardSubtitle>Kasa ve banka bakiyeleri</VCardSubtitle>
+      <VCardTitle>{{ $t('dashboard.cashAccounts.title') }}</VCardTitle>
+      <VCardSubtitle>{{ $t('dashboard.cashAccounts.subtitle') }}</VCardSubtitle>
     </VCardItem>
 
     <VCardText class="pb-2">
       <div class="d-flex align-center justify-space-between mb-4 px-2 py-3 rounded" style="background: rgba(var(--v-theme-primary), 0.08);">
-        <span class="text-body-1 font-weight-medium">Toplam Nakit</span>
+        <span class="text-body-1 font-weight-medium">{{ $t('dashboard.cashAccounts.totalCash') }}</span>
         <span class="text-h6 font-weight-bold text-primary">{{ formatCurrency(totalCash) }}</span>
       </div>
 
@@ -71,7 +72,9 @@ const getAccountColor = (type: string) => {
           <VListItemTitle class="font-weight-medium">
             {{ account.name }}
           </VListItemTitle>
-          <VListItemSubtitle>{{ account.type === 'bank' ? 'Banka' : 'Kasa' }}</VListItemSubtitle>
+          <VListItemSubtitle>
+            {{ account.type === 'bank' ? t('dashboard.cashAccounts.bank') : t('dashboard.cashAccounts.cash') }}
+          </VListItemSubtitle>
 
           <template #append>
             <span
@@ -88,7 +91,7 @@ const getAccountColor = (type: string) => {
         v-if="accounts.length === 0"
         class="text-center text-medium-emphasis py-6"
       >
-        Aktif hesap bulunamadi.
+        {{ $t('dashboard.cashAccounts.empty') }}
       </div>
     </VCardText>
   </VCard>

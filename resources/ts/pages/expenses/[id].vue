@@ -82,7 +82,7 @@ const fetchDetail = async () => {
     paymentMethods.value = response.meta.payment_methods
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Gider detayi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Gider detayı alınamadı.')
   }
   finally {
     loading.value = false
@@ -120,7 +120,7 @@ const submitPay = async () => {
     await fetchDetail()
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Odeme islemi basarisiz.')
+    errorMessage.value = getApiErrorMessage(error, 'Ödeme işlemi başarısız.')
     payErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -153,10 +153,10 @@ onMounted(fetchDetail)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Gider Detayi
+            {{ $t('pages.expenses.detailTitle') }}
           </h4>
           <p class="text-medium-emphasis mb-0">
-            {{ detail?.vendor?.name ?? 'Tedarikci yok' }}
+            {{ detail?.vendor?.name ?? $t('common.noVendor') }}
           </p>
         </div>
 
@@ -174,7 +174,7 @@ onMounted(fetchDetail)
             :disabled="!detail || detail.remaining <= 0"
             @click="openPayDialog"
           >
-            Odeme Yap
+            Ödeme Yap
           </VBtn>
 
           <VBtn
@@ -263,7 +263,7 @@ onMounted(fetchDetail)
               cols="12"
               md="4"
             >
-              <div class="text-caption text-medium-emphasis">Tutar</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.amount') }}</div>
               <div class="text-h6">
                 {{ formatCurrency(detail.amount) }}
               </div>
@@ -273,7 +273,7 @@ onMounted(fetchDetail)
               cols="12"
               md="4"
             >
-              <div class="text-caption text-medium-emphasis">Odenen</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.paid') }}</div>
               <div class="text-h6 text-success">
                 {{ formatCurrency(detail.paid_amount) }}
               </div>
@@ -283,14 +283,14 @@ onMounted(fetchDetail)
               cols="12"
               md="4"
             >
-              <div class="text-caption text-medium-emphasis">Kalan</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.remaining') }}</div>
               <div class="text-h6 text-error">
                 {{ formatCurrency(detail.remaining) }}
               </div>
             </VCol>
 
             <VCol cols="12">
-              <div class="text-caption text-medium-emphasis">Aciklama</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.description') }}</div>
               <div>{{ detail.description || '-' }}</div>
             </VCol>
           </VRow>
@@ -300,14 +300,14 @@ onMounted(fetchDetail)
 
     <VCol cols="12">
       <VCard :loading="loading">
-        <VCardItem title="Odeme Hareketleri" />
+        <VCardItem title="Ödeme Hareketleri" />
 
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Tarih</th>
-              <th>Yontem</th>
-              <th>Kasa/Banka</th>
+              <th>{{ $t('common.date') }}</th>
+              <th>{{ $t('common.method') }}</th>
+              <th>{{ $t('common.cashAccount') }}</th>
               <th class="text-right">
                 Tutar
               </th>
@@ -330,7 +330,7 @@ onMounted(fetchDetail)
                 colspan="4"
                 class="text-center text-medium-emphasis py-6"
               >
-                Odeme kaydi yok.
+                {{ $t('common.noPaymentRecords') }}
               </td>
             </tr>
           </tbody>
@@ -342,7 +342,7 @@ onMounted(fetchDetail)
       v-model="payDialog"
       max-width="560"
     >
-      <VCard title="Odeme Yap">
+      <VCard title="Ödeme Yap">
         <VCardText>
           <VForm
             ref="payFormRef"
@@ -356,7 +356,7 @@ onMounted(fetchDetail)
                 <VTextField
                   v-model="payForm.paid_at"
                   type="date"
-                  label="Odeme Tarihi"
+                  :label="$t('common.paymentDate')"
                   :rules="paidAtRules"
                   :error-messages="payErrors.paid_at ?? []"
                 />
@@ -371,7 +371,7 @@ onMounted(fetchDetail)
                   :items="paymentMethods"
                   item-title="label"
                   item-value="value"
-                  label="Yontem"
+                  :label="$t('common.method')"
                   :rules="methodRules"
                   :error-messages="payErrors.method ?? []"
                 />
@@ -383,7 +383,7 @@ onMounted(fetchDetail)
                   :items="cashAccounts"
                   item-title="name"
                   item-value="id"
-                  label="Kasa/Banka Hesabi"
+                  :label="$t('common.cashAccount')"
                   :rules="cashAccountRules"
                   :error-messages="payErrors.cash_account_id ?? []"
                 />
@@ -395,7 +395,7 @@ onMounted(fetchDetail)
                   type="number"
                   step="0.01"
                   min="0"
-                  label="Tutar"
+                  :label="$t('common.amount')"
                   :rules="amountRules"
                   :error-messages="payErrors.amount ?? []"
                 />
@@ -404,7 +404,7 @@ onMounted(fetchDetail)
               <VCol cols="12">
                 <VTextarea
                   v-model="payForm.description"
-                  label="Aciklama"
+                  :label="$t('common.description')"
                   rows="2"
                   :error-messages="payErrors.description ?? []"
                 />
@@ -419,7 +419,7 @@ onMounted(fetchDetail)
             variant="outlined"
             @click="payDialog = false"
           >
-            Vazgec
+            {{ $t('common.cancel') }}
           </VBtn>
           <VBtn
             color="primary"

@@ -26,6 +26,7 @@ const loading = ref(false)
 const errorMessage = ref('')
 const report = ref<PaymentsResponse['data'] | null>(null)
 const { withAbort } = useAbortOnUnmount()
+const { t } = useI18n({ useScope: 'global' })
 
 const toDateInput = (date: Date) => {
   const year = date.getFullYear()
@@ -62,7 +63,7 @@ const loadReport = async () => {
     if (isAbortError(error))
       return
 
-    errorMessage.value = getApiErrorMessage(error, 'Odeme raporu alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, t('reports.payments.error'))
   }
   finally {
     loading.value = false
@@ -89,7 +90,7 @@ const downloadPdf = () => {
         <VTextField
           v-model="filters.from"
           type="date"
-          label="Baslangic"
+          :label="$t('common.startDate')"
         />
       </VCol>
       <VCol
@@ -99,7 +100,7 @@ const downloadPdf = () => {
         <VTextField
           v-model="filters.to"
           type="date"
-          label="Bitis"
+          :label="$t('common.endDate')"
         />
       </VCol>
       <VCol
@@ -113,7 +114,7 @@ const downloadPdf = () => {
           :loading="loading"
           @click="loadReport"
         >
-          Raporu Getir
+          {{ $t('common.reportFetch') }}
         </VBtn>
       </VCol>
     </VRow>
@@ -133,25 +134,25 @@ const downloadPdf = () => {
           color="error"
           variant="tonal"
         >
-          Toplam Odeme: {{ formatCurrency(report.total) }}
+          {{ $t('reports.payments.totalPayment') }}: {{ formatCurrency(report.total) }}
         </VChip>
         <VBtn
           variant="outlined"
           prepend-icon="ri-download-line"
           @click="downloadPdf"
         >
-          PDF
+          {{ $t('common.pdf') }}
         </VBtn>
       </div>
 
       <VTable density="comfortable">
         <thead>
           <tr>
-            <th>Tarih</th>
-            <th>Tedarikci</th>
-            <th>Yontem / Kasa</th>
+            <th>{{ $t('common.date') }}</th>
+            <th>{{ $t('common.vendor') }}</th>
+            <th>{{ $t('common.methodAndCash') }}</th>
             <th class="text-right">
-              Tutar
+              {{ $t('common.amount') }}
             </th>
           </tr>
         </thead>

@@ -48,7 +48,7 @@ const fetchMeta = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Form verileri alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Form verileri alınamadı.')
   }
   finally {
     loadingMeta.value = false
@@ -82,7 +82,7 @@ const submit = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Gider olusturulamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Gider oluşturulamadı.')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -102,7 +102,7 @@ onMounted(fetchMeta)
             Yeni Gider
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Yeni bir gider kaydi olusturun
+            Yeni bir gider kaydı oluşturun
           </p>
         </div>
 
@@ -144,7 +144,7 @@ onMounted(fetchMeta)
                   :items="vendors"
                   item-title="label"
                   item-value="id"
-                  label="Tedarikci"
+                  :label="$t('common.vendor')"
                   clearable
                   :rules="vendorRules"
                   :error-messages="fieldErrors.vendor_id ?? []"
@@ -173,7 +173,7 @@ onMounted(fetchMeta)
                 <VTextField
                   v-model="form.expense_date"
                   type="date"
-                  label="Gider Tarihi"
+                  :label="$t('common.expenseDate')"
                   :rules="expenseDateRules"
                   :error-messages="fieldErrors.expense_date ?? []"
                 />
@@ -186,7 +186,7 @@ onMounted(fetchMeta)
                 <VTextField
                   v-model="form.due_date"
                   type="date"
-                  label="Vade Tarihi"
+                  :label="$t('common.dueDate')"
                   :rules="dueDateRules"
                   :error-messages="fieldErrors.due_date ?? []"
                 />
@@ -201,7 +201,7 @@ onMounted(fetchMeta)
                   type="number"
                   step="0.01"
                   min="0"
-                  label="Tutar"
+                  :label="$t('common.amount')"
                   :rules="amountRules"
                   :error-messages="fieldErrors.amount ?? []"
                 />
@@ -210,7 +210,7 @@ onMounted(fetchMeta)
               <VCol cols="12">
                 <VTextarea
                   v-model="form.description"
-                  label="Aciklama"
+                  :label="$t('common.description')"
                   rows="3"
                   :error-messages="fieldErrors.description ?? []"
                 />
@@ -230,7 +230,7 @@ onMounted(fetchMeta)
                     :loading="loading"
                     :disabled="loading"
                   >
-                    Kaydet
+                    {{ $t('common.save') }}
                   </VBtn>
                 </div>
               </VCol>
@@ -241,3 +241,4 @@ onMounted(fetchMeta)
     </VCol>
   </VRow>
 </template>
+

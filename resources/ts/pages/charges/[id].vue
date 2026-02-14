@@ -86,7 +86,7 @@ const fetchDetail = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Tahakkuk detayi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Tahakkuk detayı alınamadı.')
   }
   finally {
     loading.value = false
@@ -126,7 +126,7 @@ const submitCollect = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Tahsilat islemi basarisiz.')
+    errorMessage.value = getApiErrorMessage(error, 'Tahsilat işlemi başarısız.')
     collectErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -160,7 +160,7 @@ onMounted(fetchDetail)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Tahakkuk Detayi
+            {{ $t('pages.charges.detailTitle') }}
           </h4>
           <p class="text-medium-emphasis mb-0">
             {{ detail?.apartment?.label ?? '-' }}
@@ -219,7 +219,7 @@ onMounted(fetchDetail)
               md="3"
             >
               <div class="text-caption text-medium-emphasis">
-                Donem
+                Dönem
               </div>
               <div class="font-weight-medium">
                 {{ detail.period }}
@@ -270,7 +270,7 @@ onMounted(fetchDetail)
               cols="12"
               md="4"
             >
-              <div class="text-caption text-medium-emphasis">Tutar</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.amount') }}</div>
               <div class="text-h6">
                 {{ formatCurrency(detail.amount) }}
               </div>
@@ -280,7 +280,7 @@ onMounted(fetchDetail)
               cols="12"
               md="4"
             >
-              <div class="text-caption text-medium-emphasis">Odenen</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.paid') }}</div>
               <div class="text-h6 text-success">
                 {{ formatCurrency(detail.paid_amount) }}
               </div>
@@ -290,14 +290,14 @@ onMounted(fetchDetail)
               cols="12"
               md="4"
             >
-              <div class="text-caption text-medium-emphasis">Kalan</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.remaining') }}</div>
               <div class="text-h6 text-error">
                 {{ formatCurrency(detail.remaining) }}
               </div>
             </VCol>
 
             <VCol cols="12">
-              <div class="text-caption text-medium-emphasis">Aciklama</div>
+              <div class="text-caption text-medium-emphasis">{{ $t('common.description') }}</div>
               <div>{{ detail.description || '-' }}</div>
             </VCol>
           </VRow>
@@ -312,10 +312,10 @@ onMounted(fetchDetail)
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Makbuz No</th>
-              <th>Tarih</th>
-              <th>Yontem</th>
-              <th>Kasa/Banka</th>
+              <th>{{ $t('common.receiptNo') }}</th>
+              <th>{{ $t('common.date') }}</th>
+              <th>{{ $t('common.method') }}</th>
+              <th>{{ $t('common.cashAccount') }}</th>
               <th class="text-right">
                 Tutar
               </th>
@@ -339,7 +339,7 @@ onMounted(fetchDetail)
                 colspan="5"
                 class="text-center text-medium-emphasis py-6"
               >
-                Tahsilat kaydi yok.
+                {{ $t('common.noCollectionRecords') }}
               </td>
             </tr>
           </tbody>
@@ -365,7 +365,7 @@ onMounted(fetchDetail)
                 <VTextField
                   v-model="collectForm.paid_at"
                   type="date"
-                  label="Tahsilat Tarihi"
+                  :label="$t('common.collectionDate')"
                   :rules="paidAtRules"
                   :error-messages="collectErrors.paid_at ?? []"
                 />
@@ -380,7 +380,7 @@ onMounted(fetchDetail)
                   :items="paymentMethods"
                   item-title="label"
                   item-value="value"
-                  label="Yontem"
+                  :label="$t('common.method')"
                   :rules="methodRules"
                   :error-messages="collectErrors.method ?? []"
                 />
@@ -392,7 +392,7 @@ onMounted(fetchDetail)
                   :items="cashAccounts"
                   item-title="name"
                   item-value="id"
-                  label="Kasa/Banka Hesabi"
+                  :label="$t('common.cashAccount')"
                   :rules="cashAccountRules"
                   :error-messages="collectErrors.cash_account_id ?? []"
                 />
@@ -404,7 +404,7 @@ onMounted(fetchDetail)
                   type="number"
                   step="0.01"
                   min="0"
-                  label="Tutar"
+                  :label="$t('common.amount')"
                   :rules="amountRules"
                   :error-messages="collectErrors.amount ?? []"
                 />
@@ -413,7 +413,7 @@ onMounted(fetchDetail)
               <VCol cols="12">
                 <VTextarea
                   v-model="collectForm.description"
-                  label="Aciklama"
+                  :label="$t('common.description')"
                   rows="2"
                   :error-messages="collectErrors.description ?? []"
                 />
@@ -428,7 +428,7 @@ onMounted(fetchDetail)
             variant="outlined"
             @click="collectDialog = false"
           >
-            Vazgec
+            {{ $t('common.cancel') }}
           </VBtn>
           <VBtn
             color="primary"

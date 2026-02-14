@@ -39,6 +39,7 @@ const loading = ref(false)
 const errorMessage = ref('')
 const statement = ref<AccountStatementResponse['data'] | null>(null)
 const { withAbort } = useAbortOnUnmount()
+const { t } = useI18n({ useScope: 'global' })
 
 const toDateInput = (date: Date) => {
   const year = date.getFullYear()
@@ -90,7 +91,7 @@ const loadReport = async () => {
     if (isAbortError(error))
       return
 
-    errorMessage.value = getApiErrorMessage(error, 'Hesap ekstresi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, t('reports.accountStatement.error'))
   }
   finally {
     loading.value = false
@@ -123,7 +124,7 @@ const downloadPdf = () => {
           :items="accounts"
           item-title="full_name"
           item-value="id"
-          label="Muhasebe Hesabi"
+          :label="$t('reports.accountStatement.accountingAccount')"
           :loading="metaLoading"
         />
       </VCol>
@@ -134,7 +135,7 @@ const downloadPdf = () => {
         <VTextField
           v-model="filters.from"
           type="date"
-          label="Baslangic"
+          :label="$t('common.startDate')"
         />
       </VCol>
       <VCol
@@ -144,7 +145,7 @@ const downloadPdf = () => {
         <VTextField
           v-model="filters.to"
           type="date"
-          label="Bitis"
+          :label="$t('common.endDate')"
         />
       </VCol>
       <VCol
@@ -158,7 +159,7 @@ const downloadPdf = () => {
           :loading="loading"
           @click="loadReport"
         >
-          Raporu Getir
+          {{ $t('common.reportFetch') }}
         </VBtn>
       </VCol>
     </VRow>
@@ -178,31 +179,31 @@ const downloadPdf = () => {
           color="info"
           variant="tonal"
         >
-          Tahakkuk: {{ formatCurrency(statement.totals.charges) }}
+          {{ $t('reports.accountStatement.totalCharges') }}: {{ formatCurrency(statement.totals.charges) }}
         </VChip>
         <VChip
           color="error"
           variant="tonal"
         >
-          Gider: {{ formatCurrency(statement.totals.expenses) }}
+          {{ $t('reports.accountStatement.totalExpense') }}: {{ formatCurrency(statement.totals.expenses) }}
         </VChip>
         <VBtn
           variant="outlined"
           prepend-icon="ri-download-line"
           @click="downloadPdf"
         >
-          PDF
+          {{ $t('common.pdf') }}
         </VBtn>
       </div>
 
       <VTable density="comfortable">
         <thead>
           <tr>
-            <th>Tarih</th>
-            <th>Tur</th>
-            <th>Aciklama</th>
+            <th>{{ $t('common.date') }}</th>
+            <th>{{ $t('common.type') }}</th>
+            <th>{{ $t('common.description') }}</th>
             <th class="text-right">
-              Tutar
+              {{ $t('common.amount') }}
             </th>
           </tr>
         </thead>

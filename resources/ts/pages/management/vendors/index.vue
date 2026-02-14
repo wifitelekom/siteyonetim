@@ -57,7 +57,7 @@ const fetchVendors = async (page = 1) => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Tedarikci listesi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Tedarikçi listesi alınamadı.')
   }
   finally {
     loading.value = false
@@ -87,7 +87,7 @@ const deleteVendor = async (vendor: VendorItem) => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Tedarikci silinemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'Tedarikçi silinemedi.')
   }
   finally {
     deletingId.value = null
@@ -103,10 +103,10 @@ onMounted(() => fetchVendors(1))
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Tedarikciler
+            Tedarikçiler
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Tedarikci kayitlarini yonetin
+            {{ $t('pages.vendors.indexSubtitle') }}
           </p>
         </div>
 
@@ -115,7 +115,7 @@ onMounted(() => fetchVendors(1))
           prepend-icon="ri-add-line"
           to="/management/vendors/create"
         >
-          Yeni Tedarikci
+          Yeni Tedarikçi
         </VBtn>
       </div>
     </VCol>
@@ -131,10 +131,10 @@ onMounted(() => fetchVendors(1))
               <VSelect
                 v-model="filters.is_active"
                 :items="[
-                  { title: 'Aktif', value: true },
-                  { title: 'Pasif', value: false },
+                  { title: $t('common.active'), value: true },
+                  { title: $t('common.passive'), value: false },
                 ]"
-                label="Durum"
+                :label="$t('common.status')"
                 clearable
               />
             </VCol>
@@ -145,7 +145,7 @@ onMounted(() => fetchVendors(1))
             >
               <VTextField
                 v-model="filters.search"
-                label="Arama"
+                :label="$t('common.search')"
                 placeholder="Ad, vergi no, telefon, e-posta"
               />
             </VCol>
@@ -156,13 +156,13 @@ onMounted(() => fetchVendors(1))
                   variant="outlined"
                   @click="resetFilters"
                 >
-                  Temizle
+                  {{ $t('common.clear') }}
                 </VBtn>
                 <VBtn
                   color="primary"
                   @click="applyFilters"
                 >
-                  Filtrele
+                  {{ $t('common.filter') }}
                 </VBtn>
               </div>
             </VCol>
@@ -190,13 +190,13 @@ onMounted(() => fetchVendors(1))
             <tr>
               <th>Firma</th>
               <th>Vergi No</th>
-              <th>Iletisim</th>
+              <th>{{ $t('common.contact') }}</th>
               <th class="text-right">
                 Gider
               </th>
-              <th>Durum</th>
+              <th>{{ $t('common.status') }}</th>
               <th class="text-right">
-                Islemler
+                İşlemler
               </th>
             </tr>
           </thead>
@@ -224,7 +224,7 @@ onMounted(() => fetchVendors(1))
                   :color="vendor.is_active ? 'success' : 'secondary'"
                   variant="tonal"
                 >
-                  {{ vendor.is_active ? 'Aktif' : 'Pasif' }}
+                  {{ vendor.is_active ? $t('common.active') : $t('common.passive') }}
                 </VChip>
               </td>
               <td class="text-right">
@@ -254,14 +254,14 @@ onMounted(() => fetchVendors(1))
                 colspan="6"
                 class="text-center text-medium-emphasis py-6"
               >
-                Kayit bulunamadi.
+                {{ $t('common.noRecords') }}
               </td>
             </tr>
           </tbody>
         </VTable>
 
         <VCardText class="d-flex justify-space-between align-center flex-wrap gap-3">
-          <span class="text-sm text-medium-emphasis">Toplam {{ pagination.total }} kayit</span>
+          <span class="text-sm text-medium-emphasis">{{ $t('common.totalRecords', { count: pagination.total }) }}</span>
 
           <VPagination
             :model-value="pagination.current_page"
@@ -274,4 +274,5 @@ onMounted(() => fetchVendors(1))
     </VCol>
   </VRow>
 </template>
+
 

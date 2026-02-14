@@ -78,7 +78,7 @@ const fetchDetail = async () => {
     }
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Daire detayi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Daire detayı alınamadı.')
   }
   finally {
     loading.value = false
@@ -110,7 +110,7 @@ const submit = async () => {
     await router.push(`/management/apartments/${apartmentId.value}`)
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Daire guncellenemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'Daire güncellenemedi.')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -143,10 +143,10 @@ onMounted(fetchDetail)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Daire Duzenle
+            Daire Düzenle
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Daire kaydini guncelleyin
+            Daire kaydını güncelleyin
           </p>
         </div>
 
@@ -220,7 +220,7 @@ onMounted(fetchDetail)
               >
                 <VTextField
                   v-model="form.number"
-                  label="Daire No"
+                  :label="$t('common.apartmentNo')"
                   :rules="numberRules"
                   :error-messages="fieldErrors.number ?? []"
                 />
@@ -250,7 +250,7 @@ onMounted(fetchDetail)
                   type="number"
                   min="0"
                   step="0.000001"
-                  label="Arsa Payi"
+                  :label="$t('common.landShare')"
                   :rules="arsaPayiRules"
                   :error-messages="fieldErrors.arsa_payi ?? []"
                 />
@@ -259,7 +259,7 @@ onMounted(fetchDetail)
               <VCol cols="12">
                 <VSwitch
                   v-model="form.is_active"
-                  label="Aktif"
+                  :label="$t('common.active')"
                   color="primary"
                 />
               </VCol>
@@ -270,7 +270,7 @@ onMounted(fetchDetail)
                     variant="outlined"
                     :to="`/management/apartments/${apartmentId}`"
                   >
-                    Vazgec
+                    {{ $t('common.cancel') }}
                   </VBtn>
                   <VBtn
                     color="primary"
@@ -278,7 +278,7 @@ onMounted(fetchDetail)
                     :loading="saving"
                     :disabled="saving"
                   >
-                    Guncelle
+                    {{ $t('common.update') }}
                   </VBtn>
                 </div>
               </VCol>
@@ -289,4 +289,3 @@ onMounted(fetchDetail)
     </VCol>
   </VRow>
 </template>
-

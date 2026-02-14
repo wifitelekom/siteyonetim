@@ -6,6 +6,7 @@ interface Props {
 }
 
 const props = defineProps<Props>()
+const { t } = useI18n({ useScope: 'global' })
 
 const vuetifyTheme = useTheme()
 
@@ -44,7 +45,7 @@ const chartOptions = computed(() => {
       },
     },
     colors: [props.rate >= 70 ? currentTheme.success : props.rate >= 40 ? currentTheme.warning : currentTheme.error],
-    labels: ['Tahsilat Orani'],
+    labels: [t('dashboard.collectionRate.label')],
     stroke: { lineCap: 'round' as const },
   }
 })
@@ -55,8 +56,8 @@ const series = computed(() => [props.rate])
 <template>
   <VCard>
     <VCardItem>
-      <VCardTitle>Bu Ay Tahsilat</VCardTitle>
-      <VCardSubtitle>Aylik tahsilat performansi</VCardSubtitle>
+      <VCardTitle>{{ $t('dashboard.collectionRate.title') }}</VCardTitle>
+      <VCardSubtitle>{{ $t('dashboard.collectionRate.subtitle') }}</VCardSubtitle>
     </VCardItem>
 
     <VCardText class="d-flex justify-center">

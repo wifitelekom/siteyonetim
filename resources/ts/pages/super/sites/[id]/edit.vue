@@ -77,13 +77,13 @@ const requiredForNewAdmin = (value: unknown, message: string) => {
 }
 
 const siteNameRules = [requiredRule()]
-const adminNameRules = [(value: unknown) => requiredForNewAdmin(value, 'Yonetici adi zorunludur.')]
+const adminNameRules = [(value: unknown) => requiredForNewAdmin(value, 'Yönetici adı zorunludur.')]
 const adminEmailRules = [
   (value: unknown) => {
     if (!wantsNewAdmin.value)
       return true
 
-    const requiredValidation = requiredRule('Yonetici e-posta zorunludur.')(value)
+    const requiredValidation = requiredRule('Yönetici e-posta zorunludur.')(value)
     if (requiredValidation !== true)
       return requiredValidation
 
@@ -91,7 +91,7 @@ const adminEmailRules = [
   },
 ]
 const adminPasswordRules = [
-  (value: unknown) => requiredForNewAdmin(value, 'Yonetici sifresi zorunludur.'),
+  (value: unknown) => requiredForNewAdmin(value, 'Yönetici şifresi zorunludur.'),
   (value: unknown) => {
     if (!wantsNewAdmin.value)
       return true
@@ -100,12 +100,12 @@ const adminPasswordRules = [
   },
 ]
 const adminPasswordConfirmationRules = [
-  (value: unknown) => requiredForNewAdmin(value, 'Sifre tekrar zorunludur.'),
+  (value: unknown) => requiredForNewAdmin(value, 'Şifre tekrar zorunludur.'),
   (value: unknown) => {
     if (!wantsNewAdmin.value)
       return true
 
-    return matchRule(() => form.value.admin_password, 'Sifreler eslesmiyor.')(value)
+    return matchRule(() => form.value.admin_password, 'Şifreler eşleşmiyor.')(value)
   },
 ]
 
@@ -130,7 +130,7 @@ const fetchDetail = async () => {
     }
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Site detayi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Site detayı alınamadı.')
   }
   finally {
     loading.value = false
@@ -166,7 +166,7 @@ const submit = async () => {
     await router.push('/super/sites')
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Site guncellenemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'Site güncellenemedi.')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -208,10 +208,10 @@ onMounted(async () => {
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Site Duzenle
+            Site Düzenle
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Site ve yonetici bilgilerini guncelleyin
+            Site ve yönetici bilgilerini güncelleyin
           </p>
         </div>
 
@@ -257,7 +257,7 @@ onMounted(async () => {
 
               <VCol cols="12">
                 <h6 class="text-h6 mb-2">
-                  Site Bilgileri
+                  {{ $t('pages.superSites.siteInfo') }}
                 </h6>
               </VCol>
 
@@ -267,7 +267,7 @@ onMounted(async () => {
               >
                 <VTextField
                   v-model="form.name"
-                  label="Site Adi"
+                  :label="$t('common.siteName')"
                   :rules="siteNameRules"
                   :error-messages="fieldErrors.name ?? []"
                 />
@@ -303,7 +303,7 @@ onMounted(async () => {
               <VCol cols="12">
                 <VSwitch
                   v-model="form.is_active"
-                  label="Aktif"
+                  :label="$t('common.active')"
                   color="primary"
                 />
               </VCol>
@@ -314,7 +314,7 @@ onMounted(async () => {
 
               <VCol cols="12">
                 <h6 class="text-h6 mb-2">
-                  Site Yonetici Bilgileri
+                  {{ $t('pages.superSites.adminInfo') }}
                 </h6>
               </VCol>
 
@@ -324,7 +324,7 @@ onMounted(async () => {
                   :items="availableAdmins"
                   item-title="name"
                   item-value="id"
-                  label="Yonetici Ata (opsiyonel)"
+                  :label="$t('pages.superSites.assignAdmin')"
                   clearable
                   :error-messages="fieldErrors.admin_user_id ?? []"
                 >
@@ -346,7 +346,7 @@ onMounted(async () => {
               >
                 <VTextField
                   v-model="form.admin_name"
-                  label="Yeni Yonetici Ad Soyad"
+                  :label="$t('pages.superSites.newAdminFullName')"
                   :rules="adminNameRules"
                   :error-messages="fieldErrors.admin_name ?? []"
                 />
@@ -358,7 +358,7 @@ onMounted(async () => {
                 <VTextField
                   v-model="form.admin_email"
                   type="email"
-                  label="Yeni Yonetici E-posta"
+                  :label="$t('pages.superSites.newAdminEmail')"
                   :rules="adminEmailRules"
                   :error-messages="fieldErrors.admin_email ?? []"
                 />
@@ -370,7 +370,7 @@ onMounted(async () => {
                 <VTextField
                   v-model="form.admin_password"
                   type="password"
-                  label="Yeni Yonetici Sifre"
+                  :label="$t('pages.superSites.newAdminPassword')"
                   :rules="adminPasswordRules"
                   :error-messages="fieldErrors.admin_password ?? []"
                 />
@@ -382,7 +382,7 @@ onMounted(async () => {
                 <VTextField
                   v-model="form.admin_password_confirmation"
                   type="password"
-                  label="Sifre Tekrar"
+                  label="Şifre Tekrar"
                   :rules="adminPasswordConfirmationRules"
                   :error-messages="fieldErrors.admin_password_confirmation ?? []"
                 />
@@ -394,7 +394,7 @@ onMounted(async () => {
                     variant="outlined"
                     to="/super/sites"
                   >
-                    Vazgec
+                    {{ $t('common.cancel') }}
                   </VBtn>
                   <VBtn
                     color="primary"
@@ -402,7 +402,7 @@ onMounted(async () => {
                     :loading="saving"
                     :disabled="saving"
                   >
-                    Guncelle
+                    {{ $t('common.update') }}
                   </VBtn>
                 </div>
               </VCol>

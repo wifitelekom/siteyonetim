@@ -63,7 +63,7 @@ const fetchDetail = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Tedarikci detayi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Tedarikçi detayı alınamadı.')
   }
   finally {
     loading.value = false
@@ -96,7 +96,7 @@ const submit = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Tedarikci guncellenemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'Tedarikçi güncellenemedi.')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -114,7 +114,7 @@ const deleteVendor = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Tedarikci silinemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'Tedarikçi silinemedi.')
   }
   finally {
     deleting.value = false
@@ -130,10 +130,10 @@ onMounted(fetchDetail)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Tedarikci Duzenle
+            Tedarikçi Düzenle
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Tedarikci kaydini guncelleyin
+            Tedarikçi kaydını güncelleyin
           </p>
         </div>
 
@@ -183,7 +183,7 @@ onMounted(fetchDetail)
               >
                 <VTextField
                   v-model="form.name"
-                  label="Firma Adi"
+                  :label="$t('common.companyName')"
                   :rules="nameRules"
                   :error-messages="fieldErrors.name ?? []"
                 />
@@ -239,7 +239,7 @@ onMounted(fetchDetail)
                     variant="outlined"
                     to="/management/vendors"
                   >
-                    Vazgec
+                    {{ $t('common.cancel') }}
                   </VBtn>
                   <VBtn
                     color="primary"
@@ -247,7 +247,7 @@ onMounted(fetchDetail)
                     :loading="saving"
                     :disabled="saving"
                   >
-                    Guncelle
+                    {{ $t('common.update') }}
                   </VBtn>
                 </div>
               </VCol>

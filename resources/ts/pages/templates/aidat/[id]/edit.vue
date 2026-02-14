@@ -30,6 +30,7 @@ const route = useRoute()
 const router = useRouter()
 const templateId = computed(() => Number((route.params as Record<string, unknown>).id))
 const { withAbort } = useAbortOnUnmount()
+const listRoute = { path: '/templates/aidat' } as const
 
 const loadingMeta = ref(false)
 const loading = ref(false)
@@ -72,7 +73,7 @@ const apartmentRules = [
     if (form.value.scope !== 'selected')
       return true
 
-    return Array.isArray(value) && value.length > 0 ? true : 'En az bir daire seciniz.'
+    return Array.isArray(value) && value.length > 0 ? true : 'En az bir daire seçiniz.'
   },
 ]
 
@@ -86,7 +87,7 @@ const fetchMeta = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Form verileri alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Form verileri alınamadı.')
   }
   finally {
     loadingMeta.value = false
@@ -111,7 +112,7 @@ const fetchDetail = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Aidat sablonu alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Aidat şablonu alınamadı.')
   }
   finally {
     loading.value = false
@@ -142,11 +143,11 @@ const submit = async () => {
       signal,
     }))
 
-    await router.push('/templates/aidat')
+    await router.push(listRoute)
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Aidat sablonu guncellenemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'Aidat şablonu güncellenemedi.')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -160,11 +161,11 @@ const deleteTemplate = async () => {
 
   try {
     await withAbort(signal => $api(`/templates/aidat/${templateId.value}`, { method: 'DELETE', signal }))
-    await router.push('/templates/aidat')
+    await router.push(listRoute)
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Aidat sablonu silinemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'Aidat şablonu silinemedi.')
   }
   finally {
     deleting.value = false
@@ -182,17 +183,17 @@ onMounted(async () => {
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Aidat Sablonu Duzenle
+            Aidat Şablonu Düzenle
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Sablon bilgilerini guncelleyin
+            Şablon bilgilerini güncelleyin
           </p>
         </div>
 
         <div class="d-flex gap-2">
           <VBtn
             variant="outlined"
-            to="/templates/aidat"
+            :to="listRoute"
           >
             Listeye Don
           </VBtn>
@@ -235,7 +236,7 @@ onMounted(async () => {
               >
                 <VTextField
                   v-model="form.name"
-                  label="Sablon Adi"
+                  :label="$t('common.templateName')"
                   :rules="nameRules"
                   :error-messages="fieldErrors.name ?? []"
                 />
@@ -250,7 +251,7 @@ onMounted(async () => {
                   :items="accounts"
                   item-title="label"
                   item-value="id"
-                  label="Hesap"
+                  :label="$t('common.account')"
                   :rules="accountRules"
                   :error-messages="fieldErrors.account_id ?? []"
                 />
@@ -265,7 +266,7 @@ onMounted(async () => {
                   type="number"
                   min="0.01"
                   step="0.01"
-                  label="Tutar"
+                  :label="$t('common.amount')"
                   :rules="amountRules"
                   :error-messages="fieldErrors.amount ?? []"
                 />
@@ -280,7 +281,7 @@ onMounted(async () => {
                   type="number"
                   min="1"
                   max="28"
-                  label="Vade Gunu"
+                  :label="$t('common.dueDay')"
                   :rules="dueDayRules"
                   :error-messages="fieldErrors.due_day ?? []"
                 />
@@ -295,7 +296,7 @@ onMounted(async () => {
                   :items="scopeOptions"
                   item-title="label"
                   item-value="value"
-                  label="Kapsam"
+                  :label="$t('common.scope')"
                   :rules="scopeRules"
                   :error-messages="fieldErrors.scope ?? []"
                 />
@@ -310,7 +311,7 @@ onMounted(async () => {
                   :items="apartments"
                   item-title="label"
                   item-value="id"
-                  label="Daireler"
+                  :label="$t('common.apartments')"
                   multiple
                   chips
                   closable-chips
@@ -322,7 +323,7 @@ onMounted(async () => {
               <VCol cols="12">
                 <VSwitch
                   v-model="form.is_active"
-                  label="Aktif"
+                  :label="$t('common.active')"
                   color="primary"
                 />
               </VCol>
@@ -331,9 +332,9 @@ onMounted(async () => {
                 <div class="d-flex justify-end gap-3">
                   <VBtn
                     variant="outlined"
-                    to="/templates/aidat"
+                    :to="listRoute"
                   >
-                    Vazgec
+                    {{ $t('common.cancel') }}
                   </VBtn>
                   <VBtn
                     color="primary"
@@ -341,7 +342,7 @@ onMounted(async () => {
                     :loading="saving"
                     :disabled="saving"
                   >
-                    Guncelle
+                    {{ $t('common.update') }}
                   </VBtn>
                 </div>
               </VCol>
@@ -352,4 +353,3 @@ onMounted(async () => {
     </VCol>
   </VRow>
 </template>
-

@@ -54,13 +54,13 @@ const requiredForNewAdmin = (value: unknown, message: string) => {
 }
 
 const siteNameRules = [requiredRule()]
-const adminNameRules = [(value: unknown) => requiredForNewAdmin(value, 'Yonetici adi zorunludur.')]
+const adminNameRules = [(value: unknown) => requiredForNewAdmin(value, 'Yönetici adı zorunludur.')]
 const adminEmailRules = [
   (value: unknown) => {
     if (!creatingNewAdmin.value)
       return true
 
-    const requiredValidation = requiredRule('Yonetici e-posta zorunludur.')(value)
+    const requiredValidation = requiredRule('Yönetici e-posta zorunludur.')(value)
     if (requiredValidation !== true)
       return requiredValidation
 
@@ -68,7 +68,7 @@ const adminEmailRules = [
   },
 ]
 const adminPasswordRules = [
-  (value: unknown) => requiredForNewAdmin(value, 'Yonetici sifresi zorunludur.'),
+  (value: unknown) => requiredForNewAdmin(value, 'Yönetici şifresi zorunludur.'),
   (value: unknown) => {
     if (!creatingNewAdmin.value)
       return true
@@ -77,12 +77,12 @@ const adminPasswordRules = [
   },
 ]
 const adminPasswordConfirmationRules = [
-  (value: unknown) => requiredForNewAdmin(value, 'Sifre tekrar zorunludur.'),
+  (value: unknown) => requiredForNewAdmin(value, 'Şifre tekrar zorunludur.'),
   (value: unknown) => {
     if (!creatingNewAdmin.value)
       return true
 
-    return matchRule(() => form.value.admin_password, 'Sifreler eslesmiyor.')(value)
+    return matchRule(() => form.value.admin_password, 'Şifreler eşleşmiyor.')(value)
   },
 ]
 
@@ -93,7 +93,7 @@ const fetchMeta = async () => {
     availableAdmins.value = response.data.available_admins
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Yonetici listesi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Yönetici listesi alınamadı.')
   }
   finally {
     loadingMeta.value = false
@@ -129,7 +129,7 @@ const submit = async () => {
     await router.push('/super/sites')
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Site olusturulamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Site oluşturulamadı.')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -158,7 +158,7 @@ onMounted(async () => {
             Yeni Site
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Site ve yonetici bilgilerini girin
+            Site ve yönetici bilgilerini girin
           </p>
         </div>
 
@@ -193,7 +193,7 @@ onMounted(async () => {
 
               <VCol cols="12">
                 <h6 class="text-h6 mb-2">
-                  Site Bilgileri
+                  {{ $t('pages.superSites.siteInfo') }}
                 </h6>
               </VCol>
 
@@ -203,7 +203,7 @@ onMounted(async () => {
               >
                 <VTextField
                   v-model="form.name"
-                  label="Site Adi"
+                  :label="$t('common.siteName')"
                   :rules="siteNameRules"
                   :error-messages="fieldErrors.name ?? []"
                 />
@@ -239,7 +239,7 @@ onMounted(async () => {
               <VCol cols="12">
                 <VSwitch
                   v-model="form.is_active"
-                  label="Aktif"
+                  :label="$t('common.active')"
                   color="primary"
                 />
               </VCol>
@@ -250,7 +250,7 @@ onMounted(async () => {
 
               <VCol cols="12">
                 <h6 class="text-h6 mb-2">
-                  Site Yonetici Bilgileri
+                  {{ $t('pages.superSites.adminInfo') }}
                 </h6>
               </VCol>
 
@@ -260,7 +260,7 @@ onMounted(async () => {
                   :items="availableAdmins"
                   item-title="name"
                   item-value="id"
-                  label="Mevcut Yonetici Sec (opsiyonel)"
+                  :label="$t('pages.superSites.selectExistingAdmin')"
                   clearable
                   :error-messages="fieldErrors.admin_user_id ?? []"
                 >
@@ -283,7 +283,7 @@ onMounted(async () => {
                 >
                   <VTextField
                     v-model="form.admin_name"
-                    label="Yonetici Ad Soyad"
+                    :label="$t('pages.superSites.adminFullName')"
                     :rules="adminNameRules"
                     :error-messages="fieldErrors.admin_name ?? []"
                   />
@@ -295,7 +295,7 @@ onMounted(async () => {
                   <VTextField
                     v-model="form.admin_email"
                     type="email"
-                    label="Yonetici E-posta"
+                    :label="$t('pages.superSites.adminEmail')"
                     :rules="adminEmailRules"
                     :error-messages="fieldErrors.admin_email ?? []"
                   />
@@ -307,7 +307,7 @@ onMounted(async () => {
                   <VTextField
                     v-model="form.admin_password"
                     type="password"
-                    label="Yonetici Sifre"
+                    :label="$t('pages.superSites.adminPassword')"
                     :rules="adminPasswordRules"
                     :error-messages="fieldErrors.admin_password ?? []"
                   />
@@ -319,7 +319,7 @@ onMounted(async () => {
                   <VTextField
                     v-model="form.admin_password_confirmation"
                     type="password"
-                    label="Sifre Tekrar"
+                    label="Şifre Tekrar"
                     :rules="adminPasswordConfirmationRules"
                     :error-messages="fieldErrors.admin_password_confirmation ?? []"
                   />
@@ -340,7 +340,7 @@ onMounted(async () => {
                     :loading="loading"
                     :disabled="loading"
                   >
-                    Siteyi Olustur
+                    Siteyi Oluştur
                   </VBtn>
                 </div>
               </VCol>

@@ -62,7 +62,7 @@ const fetchTemplates = async (page = 1) => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Aidat sablonlari alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Aidat şablonları alınamadı.')
   }
   finally {
     loading.value = false
@@ -93,7 +93,7 @@ const deleteTemplate = async (template: AidatTemplateItem) => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Aidat sablonu silinemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'Aidat şablonu silinemedi.')
   }
   finally {
     deletingId.value = null
@@ -109,10 +109,10 @@ onMounted(() => fetchTemplates(1))
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Aidat Sablonlari
+            Aidat Şablonları
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Aidat sablonlarini yonetin
+            {{ $t('pages.aidatTemplates.indexSubtitle') }}
           </p>
         </div>
 
@@ -121,7 +121,7 @@ onMounted(() => fetchTemplates(1))
           prepend-icon="ri-add-line"
           to="/templates/aidat/create"
         >
-          Yeni Sablon
+          Yeni Şablon
         </VBtn>
       </div>
     </VCol>
@@ -137,10 +137,10 @@ onMounted(() => fetchTemplates(1))
               <VSelect
                 v-model="filters.scope"
                 :items="[
-                  { title: 'Tum Daireler', value: 'all' },
-                  { title: 'Secili Daireler', value: 'selected' },
+                  { title: $t('common.allApartments'), value: 'all' },
+                  { title: $t('common.selectedApartments'), value: 'selected' },
                 ]"
-                label="Kapsam"
+                :label="$t('common.scope')"
                 clearable
               />
             </VCol>
@@ -151,10 +151,10 @@ onMounted(() => fetchTemplates(1))
               <VSelect
                 v-model="filters.is_active"
                 :items="[
-                  { title: 'Aktif', value: true },
-                  { title: 'Pasif', value: false },
+                  { title: $t('common.active'), value: true },
+                  { title: $t('common.passive'), value: false },
                 ]"
-                label="Durum"
+                :label="$t('common.status')"
                 clearable
               />
             </VCol>
@@ -164,8 +164,8 @@ onMounted(() => fetchTemplates(1))
             >
               <VTextField
                 v-model="filters.search"
-                label="Arama"
-                placeholder="Sablon adi"
+                :label="$t('common.search')"
+                :placeholder="$t('common.templateNamePlaceholder')"
               />
             </VCol>
             <VCol cols="12">
@@ -174,13 +174,13 @@ onMounted(() => fetchTemplates(1))
                   variant="outlined"
                   @click="resetFilters"
                 >
-                  Temizle
+                  {{ $t('common.clear') }}
                 </VBtn>
                 <VBtn
                   color="primary"
                   @click="applyFilters"
                 >
-                  Filtrele
+                  {{ $t('common.filter') }}
                 </VBtn>
               </div>
             </VCol>
@@ -206,16 +206,16 @@ onMounted(() => fetchTemplates(1))
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Sablon</th>
-              <th>Hesap</th>
+              <th>{{ $t('common.template') }}</th>
+              <th>{{ $t('common.account') }}</th>
               <th class="text-right">
                 Tutar
               </th>
-              <th>Vade</th>
-              <th>Kapsam</th>
-              <th>Durum</th>
+              <th>{{ $t('common.due') }}</th>
+              <th>{{ $t('common.scope') }}</th>
+              <th>{{ $t('common.status') }}</th>
               <th class="text-right">
-                Islemler
+                İşlemler
               </th>
             </tr>
           </thead>
@@ -229,14 +229,14 @@ onMounted(() => fetchTemplates(1))
               <td class="text-right">
                 {{ formatCurrency(template.amount) }}
               </td>
-              <td>{{ template.due_day }}. gun</td>
+              <td>{{ $t('common.nthDay', { day: template.due_day }) }}</td>
               <td>
                 <VChip
                   size="small"
                   :color="template.scope === 'all' ? 'info' : 'warning'"
                   variant="tonal"
                 >
-                  {{ template.scope === 'all' ? 'Tum Daireler' : `${template.apartments_count} Daire` }}
+                  {{ template.scope === 'all' ? $t('common.allApartments') : $t('common.apartmentCount', { count: template.apartments_count }) }}
                 </VChip>
               </td>
               <td>
@@ -245,7 +245,7 @@ onMounted(() => fetchTemplates(1))
                   :color="template.is_active ? 'success' : 'secondary'"
                   variant="tonal"
                 >
-                  {{ template.is_active ? 'Aktif' : 'Pasif' }}
+                  {{ template.is_active ? $t('common.active') : $t('common.passive') }}
                 </VChip>
               </td>
               <td class="text-right">
@@ -275,14 +275,14 @@ onMounted(() => fetchTemplates(1))
                 colspan="7"
                 class="text-center text-medium-emphasis py-6"
               >
-                Kayit bulunamadi.
+                {{ $t('common.noRecords') }}
               </td>
             </tr>
           </tbody>
         </VTable>
 
         <VCardText class="d-flex justify-space-between align-center flex-wrap gap-3">
-          <span class="text-sm text-medium-emphasis">Toplam {{ pagination.total }} kayit</span>
+          <span class="text-sm text-medium-emphasis">{{ $t('common.totalRecords', { count: pagination.total }) }}</span>
 
           <VPagination
             :model-value="pagination.current_page"
@@ -295,4 +295,5 @@ onMounted(() => fetchTemplates(1))
     </VCol>
   </VRow>
 </template>
+
 

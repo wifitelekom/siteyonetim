@@ -22,12 +22,14 @@ definePage({
 const router = useRouter()
 const route = useRoute()
 const authSession = useAuthSession()
+const { t } = useI18n({ useScope: 'global' })
 
 const form = ref({
   identity: '',
   password: '',
   remember: false,
 })
+
 const formRef = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null)
 const identityRules = [requiredRule()]
 const passwordRules = [requiredRule()]
@@ -38,18 +40,24 @@ const errorMessage = ref('')
 const fieldErrors = ref<Record<string, string[]>>({})
 
 const authV2LoginMask = useGenerateImageVariant(authV2LoginMaskLight, authV2LoginMaskDark)
-const authV2LoginIllustration = useGenerateImageVariant(authV2LoginIllustrationLight, authV2LoginIllustrationDark, authV2LoginIllustrationBorderedLight, authV2LoginIllustrationBorderedDark, true)
+const authV2LoginIllustration = useGenerateImageVariant(
+  authV2LoginIllustrationLight,
+  authV2LoginIllustrationDark,
+  authV2LoginIllustrationBorderedLight,
+  authV2LoginIllustrationBorderedDark,
+  true,
+)
 
 const parseApiError = (error: unknown) => {
   if (getApiErrorStatus(error) === 429) {
-    errorMessage.value = 'Cok fazla giris denemesi. Lutfen bir dakika bekleyin.'
+    errorMessage.value = t('auth.tooManyAttempts')
 
     return
   }
 
   const apiFieldErrors = getApiFieldErrors(error)
   fieldErrors.value = apiFieldErrors
-  errorMessage.value = apiFieldErrors.identity?.[0] ?? getApiErrorMessage(error, 'Giris yapilirken bir hata olustu.')
+  errorMessage.value = apiFieldErrors.identity?.[0] ?? getApiErrorMessage(error, 'auth.loginFailed')
 }
 
 const onSubmit = async () => {
@@ -128,10 +136,10 @@ onMounted(async () => {
       >
         <VCardText>
           <h4 class="text-h4 mb-1">
-            Hos geldiniz, <span class="text-capitalize">{{ themeConfig.app.title }}</span>
+            {{ $t('auth.welcome') }}, <span class="text-capitalize">{{ themeConfig.app.title }}</span>
           </h4>
           <p class="mb-0">
-            Devam etmek icin hesabiniza giris yapin.
+            {{ $t('auth.loginPrompt') }}
           </p>
         </VCardText>
 
@@ -157,8 +165,8 @@ onMounted(async () => {
                 <VTextField
                   v-model="form.identity"
                   autofocus
-                  label="E-posta / T.C. Kimlik / Telefon"
-                  placeholder="ornek@site.com veya 0555..."
+                  :label="$t('auth.identityLabel')"
+                  :placeholder="$t('auth.identityPlaceholder')"
                   :rules="identityRules"
                   :error-messages="fieldErrors.identity ?? []"
                 />
@@ -167,7 +175,7 @@ onMounted(async () => {
               <VCol cols="12">
                 <VTextField
                   v-model="form.password"
-                  label="Sifre"
+                  :label="$t('profile.currentPassword')"
                   placeholder="********"
                   :type="isPasswordVisible ? 'text' : 'password'"
                   autocomplete="current-password"
@@ -180,10 +188,10 @@ onMounted(async () => {
                 <div class="d-flex align-center justify-space-between flex-wrap my-6 gap-x-2">
                   <VCheckbox
                     v-model="form.remember"
-                    label="Beni hatirla"
+                    :label="$t('auth.rememberMe')"
                   />
 
-                  <span class="text-caption text-medium-emphasis">Yetkisiz erisimler kayit altina alinir.</span>
+                  <span class="text-caption text-medium-emphasis">{{ $t('auth.securityNotice') }}</span>
                 </div>
 
                 <VBtn
@@ -192,7 +200,7 @@ onMounted(async () => {
                   :loading="isSubmitting"
                   :disabled="isSubmitting"
                 >
-                  Giris Yap
+                  {{ $t('common.login') }}
                 </VBtn>
               </VCol>
             </VRow>

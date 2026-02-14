@@ -1,1 +1,0 @@
-import{_ as e}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{Q as t,V as o,O as s}from"./vendor-DfCbaU-T.js";const r={},a={class:"h-100 d-flex align-center text-medium-emphasis text-base"};function n(c,i){return t(),o("div",a," © "+s(new Date().getFullYear())+" Site Yonetim ",1)}const m=e(r,[["render",n]]);export{m as default};

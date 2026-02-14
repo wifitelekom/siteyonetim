@@ -61,7 +61,7 @@ const fetchApartments = async (page = 1) => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Daire listesi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Daire listesi alınamadı.')
   }
   finally {
     loading.value = false
@@ -110,7 +110,7 @@ onMounted(() => fetchApartments(1))
             Daireler
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Daire kayitlarini yonetin
+            {{ $t('pages.apartments.indexSubtitle') }}
           </p>
         </div>
 
@@ -135,10 +135,10 @@ onMounted(() => fetchApartments(1))
               <VSelect
                 v-model="filters.is_active"
                 :items="[
-                  { title: 'Aktif', value: true },
-                  { title: 'Pasif', value: false },
+                  { title: $t('common.active'), value: true },
+                  { title: $t('common.passive'), value: false },
                 ]"
-                label="Durum"
+                :label="$t('common.status')"
                 clearable
               />
             </VCol>
@@ -149,7 +149,7 @@ onMounted(() => fetchApartments(1))
             >
               <VTextField
                 v-model="filters.search"
-                label="Arama"
+                :label="$t('common.search')"
                 placeholder="Blok, kat, no"
               />
             </VCol>
@@ -160,13 +160,13 @@ onMounted(() => fetchApartments(1))
                   variant="outlined"
                   @click="resetFilters"
                 >
-                  Temizle
+                  {{ $t('common.clear') }}
                 </VBtn>
                 <VBtn
                   color="primary"
                   @click="applyFilters"
                 >
-                  Filtrele
+                  {{ $t('common.filter') }}
                 </VBtn>
               </div>
             </VCol>
@@ -192,17 +192,17 @@ onMounted(() => fetchApartments(1))
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Daire</th>
-              <th>Sakin</th>
+              <th>{{ $t('common.apartment') }}</th>
+              <th>{{ $t('common.resident') }}</th>
               <th class="text-right">
                 m2
               </th>
               <th class="text-right">
-                Arsa Payi
+                {{ $t('common.landShare') }}
               </th>
-              <th>Durum</th>
+              <th>{{ $t('common.status') }}</th>
               <th class="text-right">
-                Islemler
+                İşlemler
               </th>
             </tr>
           </thead>
@@ -237,7 +237,7 @@ onMounted(() => fetchApartments(1))
                   :color="apartment.is_active ? 'success' : 'secondary'"
                   variant="tonal"
                 >
-                  {{ apartment.is_active ? 'Aktif' : 'Pasif' }}
+                  {{ apartment.is_active ? $t('common.active') : $t('common.passive') }}
                 </VChip>
               </td>
               <td class="text-right">
@@ -275,14 +275,14 @@ onMounted(() => fetchApartments(1))
                 colspan="6"
                 class="text-center text-medium-emphasis py-6"
               >
-                Kayit bulunamadi.
+                {{ $t('common.noRecords') }}
               </td>
             </tr>
           </tbody>
         </VTable>
 
         <VCardText class="d-flex justify-space-between align-center flex-wrap gap-3">
-          <span class="text-sm text-medium-emphasis">Toplam {{ pagination.total }} kayit</span>
+          <span class="text-sm text-medium-emphasis">{{ $t('common.totalRecords', { count: pagination.total }) }}</span>
 
           <VPagination
             :model-value="pagination.current_page"
@@ -295,4 +295,5 @@ onMounted(() => fetchApartments(1))
     </VCol>
   </VRow>
 </template>
+
 

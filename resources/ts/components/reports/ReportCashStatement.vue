@@ -39,6 +39,7 @@ const loading = ref(false)
 const errorMessage = ref('')
 const statement = ref<CashStatementResponse['data'] | null>(null)
 const { withAbort } = useAbortOnUnmount()
+const { t } = useI18n({ useScope: 'global' })
 
 const toDateInput = (date: Date) => {
   const year = date.getFullYear()
@@ -90,7 +91,7 @@ const loadReport = async () => {
     if (isAbortError(error))
       return
 
-    errorMessage.value = getApiErrorMessage(error, 'Kasa ekstresi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, t('reports.cashStatement.error'))
   }
   finally {
     loading.value = false
@@ -123,7 +124,7 @@ const downloadPdf = () => {
           :items="cashAccounts"
           item-title="name"
           item-value="id"
-          label="Kasa/Banka Hesabi"
+          :label="$t('reports.cashStatement.cashAccount')"
           :loading="metaLoading"
         />
       </VCol>
@@ -134,7 +135,7 @@ const downloadPdf = () => {
         <VTextField
           v-model="filters.from"
           type="date"
-          label="Baslangic"
+          :label="$t('common.startDate')"
         />
       </VCol>
       <VCol
@@ -144,7 +145,7 @@ const downloadPdf = () => {
         <VTextField
           v-model="filters.to"
           type="date"
-          label="Bitis"
+          :label="$t('common.endDate')"
         />
       </VCol>
       <VCol
@@ -158,7 +159,7 @@ const downloadPdf = () => {
           :loading="loading"
           @click="loadReport"
         >
-          Raporu Getir
+          {{ $t('common.reportFetch') }}
         </VBtn>
       </VCol>
     </VRow>
@@ -178,36 +179,36 @@ const downloadPdf = () => {
           color="primary"
           variant="tonal"
         >
-          Acilis: {{ formatCurrency(statement.opening_balance) }}
+          {{ $t('reports.cashStatement.opening') }}: {{ formatCurrency(statement.opening_balance) }}
         </VChip>
         <VChip
           color="success"
           variant="tonal"
         >
-          Kapanis: {{ formatCurrency(statement.closing_balance) }}
+          {{ $t('reports.cashStatement.closing') }}: {{ formatCurrency(statement.closing_balance) }}
         </VChip>
         <VBtn
           variant="outlined"
           prepend-icon="ri-download-line"
           @click="downloadPdf"
         >
-          PDF
+          {{ $t('common.pdf') }}
         </VBtn>
       </div>
 
       <VTable density="comfortable">
         <thead>
           <tr>
-            <th>Tarih</th>
-            <th>Aciklama</th>
+            <th>{{ $t('common.date') }}</th>
+            <th>{{ $t('common.description') }}</th>
             <th class="text-right">
-              Giris
+              {{ $t('reports.cashStatement.inflow') }}
             </th>
             <th class="text-right">
-              Cikis
+              {{ $t('reports.cashStatement.outflow') }}
             </th>
             <th class="text-right">
-              Bakiye
+              {{ $t('reports.cashStatement.balance') }}
             </th>
           </tr>
         </thead>

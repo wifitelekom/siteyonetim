@@ -66,7 +66,7 @@ const fetchStatement = async () => {
     filters.value.to = response.data.to
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Ekstre alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Ekstre alınamadı.')
   }
   finally {
     loading.value = false
@@ -121,7 +121,7 @@ onMounted(fetchStatement)
               <VTextField
                 v-model="filters.from"
                 type="date"
-                label="Baslangic"
+                :label="$t('common.startDate')"
               />
             </VCol>
             <VCol
@@ -131,7 +131,7 @@ onMounted(fetchStatement)
               <VTextField
                 v-model="filters.to"
                 type="date"
-                label="Bitis"
+                :label="$t('common.endDate')"
               />
             </VCol>
             <VCol
@@ -161,7 +161,7 @@ onMounted(fetchStatement)
               md="4"
             >
               <div class="text-caption text-medium-emphasis">
-                Acilis Bakiyesi
+                Açılış Bakiyesi
               </div>
               <div class="text-h6">
                 {{ formatCurrency(statement.opening_balance) }}
@@ -172,7 +172,7 @@ onMounted(fetchStatement)
               md="4"
             >
               <div class="text-caption text-medium-emphasis">
-                Kapanis Bakiyesi
+                Kapanış Bakiyesi
               </div>
               <div class="text-h6">
                 {{ formatCurrency(statement.closing_balance) }}
@@ -183,7 +183,7 @@ onMounted(fetchStatement)
               md="4"
             >
               <div class="text-caption text-medium-emphasis">
-                Donem
+                Dönem
               </div>
               <div class="font-weight-medium">
                 {{ formatDate(statement.from) }} - {{ formatDate(statement.to) }}
@@ -195,9 +195,9 @@ onMounted(fetchStatement)
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Tarih</th>
-              <th>Aciklama</th>
-              <th>Belge</th>
+              <th>{{ $t('common.date') }}</th>
+              <th>{{ $t('common.description') }}</th>
+              <th>{{ $t('common.document') }}</th>
               <th class="text-right">
                 Giris
               </th>
@@ -232,7 +232,7 @@ onMounted(fetchStatement)
                 colspan="6"
                 class="text-center text-medium-emphasis py-6"
               >
-                Hareket bulunamadi.
+                {{ $t('common.noTransactions') }}
               </td>
             </tr>
           </tbody>

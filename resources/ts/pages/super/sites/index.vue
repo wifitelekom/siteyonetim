@@ -30,6 +30,7 @@ const authSession = useAuthSession()
 
 const loading = ref(false)
 const deletingId = ref<number | null>(null)
+const switchingId = ref<number | null>(null)
 const errorMessage = ref('')
 
 const sites = ref<SiteItem[]>([])
@@ -46,6 +47,7 @@ const filters = ref({
 })
 
 const canManageSites = computed(() => authSession.can('sites.manage'))
+const activeSiteId = computed(() => authSession.site.value?.id ?? null)
 
 
 const fetchSites = async (page = 1) => {
@@ -68,7 +70,7 @@ const fetchSites = async (page = 1) => {
     pagination.value = response.meta
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Site listesi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Site listesi alınamadı.')
   }
   finally {
     loading.value = false
@@ -104,6 +106,38 @@ const deleteSite = async (site: SiteItem) => {
   }
 }
 
+const switchSite = async (site: SiteItem) => {
+  switchingId.value = site.id
+  errorMessage.value = ''
+
+  try {
+    await authSession.switchSiteContext(site.id)
+    await router.push('/')
+  }
+  catch (error) {
+    errorMessage.value = getApiErrorMessage(error, 'Site baglami guncellenemedi.')
+  }
+  finally {
+    switchingId.value = null
+  }
+}
+
+const clearSiteContext = async () => {
+  switchingId.value = -1
+  errorMessage.value = ''
+
+  try {
+    await authSession.switchSiteContext(null)
+    await fetchSites(1)
+  }
+  catch (error) {
+    errorMessage.value = getApiErrorMessage(error, 'Site baglami temizlenemedi.')
+  }
+  finally {
+    switchingId.value = null
+  }
+}
+
 onMounted(async () => {
   await authSession.ensureSession()
 
@@ -125,7 +159,7 @@ onMounted(async () => {
             Siteler
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Super admin site yonetimi
+            Super admin site yönetimi
           </p>
         </div>
 
@@ -135,6 +169,17 @@ onMounted(async () => {
           to="/super/sites/create"
         >
           Yeni Site
+        </VBtn>
+
+        <VBtn
+          v-if="activeSiteId"
+          variant="outlined"
+          prepend-icon="ri-close-circle-line"
+          :loading="switchingId === -1"
+          :disabled="switchingId !== null"
+          @click="clearSiteContext"
+        >
+          Site secimini kaldir
         </VBtn>
       </div>
     </VCol>
@@ -150,10 +195,10 @@ onMounted(async () => {
               <VSelect
                 v-model="filters.is_active"
                 :items="[
-                  { title: 'Aktif', value: true },
-                  { title: 'Pasif', value: false },
+                  { title: $t('common.active'), value: true },
+                  { title: $t('common.passive'), value: false },
                 ]"
-                label="Durum"
+                :label="$t('common.status')"
                 clearable
               />
             </VCol>
@@ -164,7 +209,7 @@ onMounted(async () => {
             >
               <VTextField
                 v-model="filters.search"
-                label="Arama"
+                :label="$t('common.search')"
                 placeholder="Site adi, telefon, vergi no"
               />
             </VCol>
@@ -175,13 +220,13 @@ onMounted(async () => {
                   variant="outlined"
                   @click="resetFilters"
                 >
-                  Temizle
+                  {{ $t('common.clear') }}
                 </VBtn>
                 <VBtn
                   color="primary"
                   @click="applyFilters"
                 >
-                  Filtrele
+                  {{ $t('common.filter') }}
                 </VBtn>
               </div>
             </VCol>
@@ -207,13 +252,13 @@ onMounted(async () => {
         <VTable density="comfortable">
           <thead>
             <tr>
-              <th>Site</th>
-              <th>Yonetici</th>
-              <th>Telefon</th>
-              <th>Durum</th>
-              <th>Olusturma</th>
+              <th>{{ $t('common.site') }}</th>
+              <th>{{ $t('common.manager') }}</th>
+              <th>{{ $t('common.phone') }}</th>
+              <th>{{ $t('common.status') }}</th>
+              <th>{{ $t('common.createdAt') }}</th>
               <th class="text-right">
-                Islemler
+                İşlemler
               </th>
             </tr>
           </thead>
@@ -243,11 +288,22 @@ onMounted(async () => {
                   :color="site.is_active ? 'success' : 'secondary'"
                   variant="tonal"
                 >
-                  {{ site.is_active ? 'Aktif' : 'Pasif' }}
+                  {{ site.is_active ? $t('common.active') : $t('common.passive') }}
                 </VChip>
               </td>
               <td>{{ formatDate(site.created_at) }}</td>
               <td class="text-right">
+                <VBtn
+                  icon
+                  size="small"
+                  variant="text"
+                  color="primary"
+                  :loading="switchingId === site.id"
+                  :disabled="switchingId !== null"
+                  @click="switchSite(site)"
+                >
+                  <VIcon icon="ri-login-box-line" />
+                </VBtn>
                 <VBtn
                   icon
                   size="small"
@@ -262,7 +318,7 @@ onMounted(async () => {
                   variant="text"
                   color="error"
                   :loading="deletingId === site.id"
-                  :disabled="deletingId === site.id"
+                  :disabled="deletingId === site.id || switchingId !== null"
                   @click="deleteSite(site)"
                 >
                   <VIcon icon="ri-delete-bin-line" />
@@ -274,14 +330,14 @@ onMounted(async () => {
                 colspan="6"
                 class="text-center text-medium-emphasis py-6"
               >
-                Kayit bulunamadi.
+                {{ $t('common.noRecords') }}
               </td>
             </tr>
           </tbody>
         </VTable>
 
         <VCardText class="d-flex justify-space-between align-center flex-wrap gap-3">
-          <span class="text-sm text-medium-emphasis">Toplam {{ pagination.total }} kayit</span>
+          <span class="text-sm text-medium-emphasis">{{ $t('common.totalRecords', { count: pagination.total }) }}</span>
 
           <VPagination
             :model-value="pagination.current_page"
@@ -294,4 +350,5 @@ onMounted(async () => {
     </VCol>
   </VRow>
 </template>
+
 

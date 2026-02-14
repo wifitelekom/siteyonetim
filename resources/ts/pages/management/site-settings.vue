@@ -14,6 +14,8 @@ interface SiteSettingsResponse {
   }
 }
 
+const { t } = useI18n({ useScope: 'global' })
+
 const loading = ref(false)
 const saving = ref(false)
 const errorMessage = ref('')
@@ -43,7 +45,7 @@ const fetchSettings = async () => {
     }
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Site ayarlari alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'siteSettings.loadFailed')
   }
   finally {
     loading.value = false
@@ -70,10 +72,10 @@ const submit = async () => {
       },
     })
 
-    successMessage.value = 'Site ayarlari guncellendi.'
+    successMessage.value = t('siteSettings.updated')
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Site ayarlari guncellenemedi.')
+    errorMessage.value = getApiErrorMessage(error, 'siteSettings.updateFailed')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -90,17 +92,17 @@ onMounted(fetchSettings)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Site Ayarlari
+            {{ $t('navigation.siteSettings') }}
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Site temel bilgilerini guncelleyin
+            {{ $t('siteSettings.subtitle') }}
           </p>
         </div>
       </div>
     </VCol>
 
     <VCol cols="12">
-      <VCard :loading="loading || saving">
+      <VCard>
         <VCardText>
           <VForm
             ref="formRef"
@@ -134,17 +136,19 @@ onMounted(fetchSettings)
               <VCol cols="12">
                 <VTextField
                   v-model="form.name"
-                  label="Site Adi"
+                  :label="$t('common.siteName')"
                   :rules="nameRules"
                   :error-messages="fieldErrors.name ?? []"
+                  :loading="loading || saving"
                 />
               </VCol>
 
               <VCol cols="12">
                 <VTextField
                   v-model="form.phone"
-                  label="Telefon"
+                  :label="$t('common.phone')"
                   :error-messages="fieldErrors.phone ?? []"
+                  :loading="loading || saving"
                 />
               </VCol>
 
@@ -154,6 +158,7 @@ onMounted(fetchSettings)
                   label="Adres"
                   rows="3"
                   :error-messages="fieldErrors.address ?? []"
+                  :loading="loading || saving"
                 />
               </VCol>
 
@@ -165,7 +170,7 @@ onMounted(fetchSettings)
                     :loading="saving"
                     :disabled="saving"
                   >
-                    Guncelle
+                    {{ $t('common.update') }}
                   </VBtn>
                 </div>
               </VCol>
@@ -176,4 +181,3 @@ onMounted(fetchSettings)
     </VCol>
   </VRow>
 </template>
-

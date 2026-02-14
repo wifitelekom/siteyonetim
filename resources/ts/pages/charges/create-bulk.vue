@@ -36,7 +36,7 @@ const form = ref({
 const formRef = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null)
 
 const apartmentRules = [
-  (value: unknown) => Array.isArray(value) && value.length > 0 ? true : 'En az bir daire seciniz.',
+  (value: unknown) => Array.isArray(value) && value.length > 0 ? true : 'En az bir daire seçiniz.',
 ]
 const accountRules = [requiredRule()]
 const chargeTypeRules = [requiredRule()]
@@ -55,7 +55,7 @@ const fetchMeta = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Form verileri alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Form verileri alınamadı.')
   }
   finally {
     loadingMeta.value = false
@@ -98,7 +98,7 @@ const submit = async () => {
   }
   catch (error) {
     if (isAbortError(error)) return
-    errorMessage.value = getApiErrorMessage(error, 'Toplu tahakkuk olusturulamadi.')
+    errorMessage.value = getApiErrorMessage(error, 'Toplu tahakkuk oluşturulamadı.')
     fieldErrors.value = getApiFieldErrors(error)
   }
   finally {
@@ -118,7 +118,7 @@ onMounted(fetchMeta)
             Toplu Tahakkuk
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Birden fazla daire icin tek seferde tahakkuk olusturun
+            Birden fazla daire için tek seferde tahakkuk oluşturun
           </p>
         </div>
 
@@ -153,21 +153,21 @@ onMounted(fetchMeta)
 
               <VCol cols="12">
                 <div class="d-flex justify-space-between align-center mb-2">
-                  <label class="text-body-2">Daireler</label>
+                  <label class="text-body-2">{{ $t('common.apartments') }}</label>
                   <div class="d-flex gap-2">
                     <VBtn
                       size="small"
                       variant="text"
                       @click="selectAllApartments"
                     >
-                      Tumunu Sec
+                      Tümunu Sec
                     </VBtn>
                     <VBtn
                       size="small"
                       variant="text"
                       @click="clearApartments"
                     >
-                      Temizle
+                      {{ $t('common.clear') }}
                     </VBtn>
                   </div>
                 </div>
@@ -177,7 +177,7 @@ onMounted(fetchMeta)
                   :items="apartments"
                   item-title="label"
                   item-value="id"
-                  label="Daireler"
+                  :label="$t('common.apartments')"
                   multiple
                   chips
                   closable-chips
@@ -210,7 +210,7 @@ onMounted(fetchMeta)
                   :items="chargeTypes"
                   item-title="label"
                   item-value="value"
-                  label="Tahakkuk Turu"
+                  :label="$t('common.chargeType')"
                   :rules="chargeTypeRules"
                   :error-messages="fieldErrors.charge_type ?? []"
                 />
@@ -223,7 +223,7 @@ onMounted(fetchMeta)
                 <VTextField
                   v-model="form.period"
                   type="month"
-                  label="Donem"
+                  :label="$t('common.period')"
                   :rules="periodRules"
                   :error-messages="fieldErrors.period ?? []"
                 />
@@ -236,7 +236,7 @@ onMounted(fetchMeta)
                 <VTextField
                   v-model="form.due_date"
                   type="date"
-                  label="Vade Tarihi"
+                  :label="$t('common.dueDate')"
                   :rules="dueDateRules"
                   :error-messages="fieldErrors.due_date ?? []"
                 />
@@ -251,7 +251,7 @@ onMounted(fetchMeta)
                   type="number"
                   step="0.01"
                   min="0"
-                  label="Tutar"
+                  :label="$t('common.amount')"
                   :rules="amountRules"
                   :error-messages="fieldErrors.amount ?? []"
                 />
@@ -260,7 +260,7 @@ onMounted(fetchMeta)
               <VCol cols="12">
                 <VTextarea
                   v-model="form.description"
-                  label="Aciklama"
+                  :label="$t('common.description')"
                   rows="3"
                   :error-messages="fieldErrors.description ?? []"
                 />
@@ -280,7 +280,7 @@ onMounted(fetchMeta)
                     :loading="loading"
                     :disabled="loading"
                   >
-                    Toplu Olustur
+                    Toplu Oluştur
                   </VBtn>
                 </div>
               </VCol>
@@ -291,4 +291,5 @@ onMounted(fetchMeta)
     </VCol>
   </VRow>
 </template>
+
 

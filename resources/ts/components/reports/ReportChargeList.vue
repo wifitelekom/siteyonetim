@@ -31,6 +31,7 @@ const loading = ref(false)
 const errorMessage = ref('')
 const report = ref<ChargeListResponse['data'] | null>(null)
 const { withAbort } = useAbortOnUnmount()
+const { t } = useI18n({ useScope: 'global' })
 
 const toPeriodInput = (date: Date) => {
   const year = date.getFullYear()
@@ -61,7 +62,7 @@ const loadReport = async () => {
     if (isAbortError(error))
       return
 
-    errorMessage.value = getApiErrorMessage(error, 'Tahakkuk listesi alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, t('reports.chargeList.error'))
   }
   finally {
     loading.value = false
@@ -87,7 +88,7 @@ const downloadPdf = () => {
         <VTextField
           v-model="filters.period"
           type="month"
-          label="Donem"
+          :label="$t('common.period')"
         />
       </VCol>
       <VCol
@@ -101,7 +102,7 @@ const downloadPdf = () => {
           :loading="loading"
           @click="loadReport"
         >
-          Raporu Getir
+          {{ $t('common.reportFetch') }}
         </VBtn>
       </VCol>
     </VRow>
@@ -121,46 +122,46 @@ const downloadPdf = () => {
           color="info"
           variant="tonal"
         >
-          Toplam: {{ formatCurrency(report.totals.amount) }}
+          {{ $t('common.total') }}: {{ formatCurrency(report.totals.amount) }}
         </VChip>
         <VChip
           color="success"
           variant="tonal"
         >
-          Odenen: {{ formatCurrency(report.totals.paid) }}
+          {{ $t('common.paid') }}: {{ formatCurrency(report.totals.paid) }}
         </VChip>
         <VChip
           color="error"
           variant="tonal"
         >
-          Kalan: {{ formatCurrency(report.totals.remaining) }}
+          {{ $t('common.remaining') }}: {{ formatCurrency(report.totals.remaining) }}
         </VChip>
         <VBtn
           variant="outlined"
           prepend-icon="ri-download-line"
           @click="downloadPdf"
         >
-          PDF
+          {{ $t('common.pdf') }}
         </VBtn>
       </div>
 
       <VTable density="comfortable">
         <thead>
           <tr>
-            <th>Daire</th>
-            <th>Hesap</th>
-            <th>Donem</th>
-            <th>Vade</th>
+            <th>{{ $t('common.apartment') }}</th>
+            <th>{{ $t('common.account') }}</th>
+            <th>{{ $t('common.period') }}</th>
+            <th>{{ $t('common.due') }}</th>
             <th class="text-right">
-              Tutar
+              {{ $t('common.amount') }}
             </th>
             <th class="text-right">
-              Odenen
+              {{ $t('common.paid') }}
             </th>
             <th class="text-right">
-              Kalan
+              {{ $t('common.remaining') }}
             </th>
-            <th>Durum</th>
+            <th>{{ $t('common.status') }}</th>
           </tr>
         </thead>
         <tbody>

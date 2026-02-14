@@ -57,6 +57,7 @@ interface DashboardResponse {
 const loading = ref(true)
 const errorMessage = ref('')
 const summary = ref<DashboardSummary | null>(null)
+const { t } = useI18n({ useScope: 'global' })
 
 const { withAbort } = useAbortOnUnmount()
 
@@ -72,7 +73,7 @@ const fetchDashboard = async () => {
     if (isAbortError(error))
       return
 
-    errorMessage.value = getApiErrorMessage(error, 'Panel verileri alinamadi.')
+    errorMessage.value = getApiErrorMessage(error, t('dashboard.errors.loadFailed'))
   }
   finally {
     loading.value = false
@@ -88,10 +89,10 @@ onMounted(fetchDashboard)
     <div class="d-flex align-center justify-space-between mb-6">
       <div>
         <h4 class="text-h4 font-weight-bold mb-1">
-          Genel Bakis
+          {{ $t('dashboard.header.title') }}
         </h4>
         <p class="text-body-1 text-medium-emphasis mb-0">
-          Tahsilat, gider ve nakit ozetleri
+          {{ $t('dashboard.header.subtitle') }}
         </p>
       </div>
 
@@ -102,7 +103,7 @@ onMounted(fetchDashboard)
         :loading="loading"
         @click="fetchDashboard"
       >
-        Yenile
+        {{ $t('common.refresh') }}
       </VBtn>
     </div>
 
@@ -142,9 +143,9 @@ onMounted(fetchDashboard)
           lg="3"
         >
           <DashboardStatCard
-            title="Toplam Alacak"
+            :title="$t('dashboard.stats.totalReceivable')"
             :value="formatCurrency(summary.receivables.total)"
-            :subtitle="`${summary.receivables.count} acik tahakkuk`"
+            :subtitle="$t('dashboard.stats.openCharges', { count: summary.receivables.count })"
             icon="ri-money-dollar-circle-line"
             color="success"
           />
@@ -157,9 +158,9 @@ onMounted(fetchDashboard)
           lg="3"
         >
           <DashboardStatCard
-            title="Toplam Borc"
+            :title="$t('dashboard.stats.totalDebt')"
             :value="formatCurrency(summary.payables.total)"
-            :subtitle="`${summary.payables.vendor_count} tedarikci`"
+            :subtitle="$t('dashboard.stats.vendors', { count: summary.payables.vendor_count })"
             icon="ri-shopping-cart-2-line"
             color="error"
           />
@@ -172,9 +173,9 @@ onMounted(fetchDashboard)
           lg="3"
         >
           <DashboardStatCard
-            title="Toplam Nakit"
+            :title="$t('dashboard.stats.totalCash')"
             :value="formatCurrency(summary.totalCash)"
-            :subtitle="`${summary.cashAccounts?.length ?? 0} hesap`"
+            :subtitle="$t('dashboard.stats.accounts', { count: summary.cashAccounts?.length ?? 0 })"
             icon="ri-wallet-3-line"
             color="primary"
           />
@@ -187,9 +188,9 @@ onMounted(fetchDashboard)
           lg="3"
         >
           <DashboardStatCard
-            title="Bu Ay Tahsilat"
+            :title="$t('dashboard.stats.monthlyCollection')"
             :value="`${summary.monthlyReceiptCount}`"
-            subtitle="Tahsilat islemi"
+            :subtitle="$t('dashboard.stats.collectionTransaction')"
             icon="ri-bar-chart-grouped-line"
             color="warning"
           />
@@ -263,8 +264,8 @@ onMounted(fetchDashboard)
         >
           <VCard>
             <VCardItem>
-              <VCardTitle>Borc Durumu</VCardTitle>
-              <VCardSubtitle>Vade bazli borc dagilimi</VCardSubtitle>
+              <VCardTitle>{{ $t('dashboard.payables.title') }}</VCardTitle>
+              <VCardSubtitle>{{ $t('dashboard.payables.subtitle') }}</VCardSubtitle>
             </VCardItem>
 
             <VCardText>
@@ -284,9 +285,9 @@ onMounted(fetchDashboard)
                     </VAvatar>
                     <div>
                       <p class="text-body-1 font-weight-medium mb-0">
-                        Vadesi Gelmemis
+                        {{ $t('dashboard.payables.notDue.title') }}
                       </p>
-                      <span class="text-caption text-medium-emphasis">Henuz vadesi gelmemis borclar</span>
+                      <span class="text-caption text-medium-emphasis">{{ $t('dashboard.payables.notDue.subtitle') }}</span>
                     </div>
                   </div>
                   <span class="text-body-1 font-weight-bold">{{ formatCurrency(summary.payables.not_due) }}</span>
@@ -309,9 +310,9 @@ onMounted(fetchDashboard)
                     </VAvatar>
                     <div>
                       <p class="text-body-1 font-weight-medium mb-0">
-                        Bugun Vadeli
+                        {{ $t('dashboard.payables.dueToday.title') }}
                       </p>
-                      <span class="text-caption text-medium-emphasis">Bugun odemesi gereken borclar</span>
+                      <span class="text-caption text-medium-emphasis">{{ $t('dashboard.payables.dueToday.subtitle') }}</span>
                     </div>
                   </div>
                   <span class="text-body-1 font-weight-bold">{{ formatCurrency(summary.payables.due_today) }}</span>
@@ -334,9 +335,9 @@ onMounted(fetchDashboard)
                     </VAvatar>
                     <div>
                       <p class="text-body-1 font-weight-medium mb-0">
-                        Gecikmis
+                        {{ $t('dashboard.payables.overdue.title') }}
                       </p>
-                      <span class="text-caption text-medium-emphasis">Vadesi gecmis odenecek borclar</span>
+                      <span class="text-caption text-medium-emphasis">{{ $t('dashboard.payables.overdue.subtitle') }}</span>
                     </div>
                   </div>
                   <span class="text-body-1 font-weight-bold text-error">
@@ -355,8 +356,8 @@ onMounted(fetchDashboard)
         >
           <VCard>
             <VCardItem>
-              <VCardTitle>Sablon Durumu</VCardTitle>
-              <VCardSubtitle>Aidat ve gider sablonlari</VCardSubtitle>
+              <VCardTitle>{{ $t('dashboard.templates.title') }}</VCardTitle>
+              <VCardSubtitle>{{ $t('dashboard.templates.subtitle') }}</VCardSubtitle>
             </VCardItem>
 
             <VCardText>
@@ -377,9 +378,11 @@ onMounted(fetchDashboard)
                       </VAvatar>
                       <div>
                         <p class="text-body-1 font-weight-medium mb-0">
-                          Aidat Sablonlari
+                          {{ $t('dashboard.templates.aidat') }}
                         </p>
-                        <span class="text-caption text-medium-emphasis">{{ summary.aidatTemplates }} aktif / {{ summary.aidatTemplatesTotal }} toplam</span>
+                        <span class="text-caption text-medium-emphasis">
+                          {{ $t('dashboard.templates.stats', { active: summary.aidatTemplates, total: summary.aidatTemplatesTotal }) }}
+                        </span>
                       </div>
                     </div>
                     <VChip
@@ -391,7 +394,7 @@ onMounted(fetchDashboard)
                     </VChip>
                   </div>
                   <VProgressLinear
-                    :model-value="summary.aidatTemplatesTotal > 0 ? (summary.aidatTemplates / summary.aidatTemplatesTotal) * 100 : 0"
+                    :model-value="(summary.aidatTemplatesTotal ?? 0) > 0 ? ((summary.aidatTemplates ?? 0) / (summary.aidatTemplatesTotal ?? 1)) * 100 : 0"
                     color="primary"
                     rounded
                     height="6"
@@ -414,9 +417,11 @@ onMounted(fetchDashboard)
                       </VAvatar>
                       <div>
                         <p class="text-body-1 font-weight-medium mb-0">
-                          Gider Sablonlari
+                          {{ $t('dashboard.templates.expense') }}
                         </p>
-                        <span class="text-caption text-medium-emphasis">{{ summary.expenseTemplates }} aktif / {{ summary.expenseTemplatesTotal }} toplam</span>
+                        <span class="text-caption text-medium-emphasis">
+                          {{ $t('dashboard.templates.stats', { active: summary.expenseTemplates, total: summary.expenseTemplatesTotal }) }}
+                        </span>
                       </div>
                     </div>
                     <VChip
@@ -428,7 +433,7 @@ onMounted(fetchDashboard)
                     </VChip>
                   </div>
                   <VProgressLinear
-                    :model-value="summary.expenseTemplatesTotal > 0 ? (summary.expenseTemplates / summary.expenseTemplatesTotal) * 100 : 0"
+                    :model-value="(summary.expenseTemplatesTotal ?? 0) > 0 ? ((summary.expenseTemplates ?? 0) / (summary.expenseTemplatesTotal ?? 1)) * 100 : 0"
                     color="warning"
                     rounded
                     height="6"
@@ -445,18 +450,18 @@ onMounted(fetchDashboard)
         <VCol cols="12">
           <VCard>
             <VCardItem>
-              <VCardTitle>Son Hareketler</VCardTitle>
-              <VCardSubtitle>Son 10 tahsilat ve odeme islemi</VCardSubtitle>
+              <VCardTitle>{{ $t('dashboard.recent.title') }}</VCardTitle>
+              <VCardSubtitle>{{ $t('dashboard.recent.subtitle') }}</VCardSubtitle>
             </VCardItem>
 
             <VTable density="comfortable">
               <thead>
                 <tr>
-                  <th>Tarih</th>
-                  <th>Aciklama</th>
-                  <th>Tip</th>
+                  <th>{{ $t('common.date') }}</th>
+                  <th>{{ $t('common.description') }}</th>
+                  <th>{{ $t('common.type') }}</th>
                   <th class="text-right">
-                    Tutar
+                    {{ $t('common.amount') }}
                   </th>
                 </tr>
               </thead>
@@ -482,7 +487,7 @@ onMounted(fetchDashboard)
                         start
                         size="14"
                       />
-                      {{ transaction.type === 'receipt' ? 'Tahsilat' : 'Odeme' }}
+                      {{ transaction.type === 'receipt' ? $t('dashboard.recent.receipt') : $t('dashboard.recent.payment') }}
                     </VChip>
                   </td>
                   <td class="text-right">
@@ -499,7 +504,7 @@ onMounted(fetchDashboard)
                     colspan="4"
                     class="text-center text-medium-emphasis py-6"
                   >
-                    Hareket bulunamadi.
+                    {{ $t('dashboard.recent.empty') }}
                   </td>
                 </tr>
               </tbody>

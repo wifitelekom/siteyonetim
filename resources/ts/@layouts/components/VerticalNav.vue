@@ -28,15 +28,16 @@ provide(injectionKeyIsVerticalNavHovered, isHovered)
 
 const configStore = useLayoutConfigStore()
 const authSession = useAuthSession()
+const { t } = useI18n({ useScope: 'global' })
 
 const siteSubtitle = computed(() => {
   if (authSession.site.value?.name)
     return authSession.site.value.name
 
   if (authSession.hasRole('super-admin'))
-    return 'Merkezi Yonetim'
+    return t('navigation.centralManagement')
 
-  return 'Site Secili Degil'
+  return t('navigation.noSiteSelected')
 })
 
 const resolveNavItemComponent = (item: NavLink | NavSectionTitle | NavGroup): unknown => {

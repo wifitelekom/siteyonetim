@@ -23,6 +23,7 @@ Route::prefix('api/v1/auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware(['guest', 'throttle:login'])->name('api.auth.login');
     Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('api.auth.logout');
     Route::get('/me', [AuthController::class, 'me'])->middleware('auth')->name('api.auth.me');
+    Route::put('/site-context', [AuthController::class, 'setSiteContext'])->middleware('auth')->name('api.auth.site-context');
 });
 
 Route::prefix('api/v1')->middleware(['auth', 'site.scope'])->group(function () {

@@ -94,6 +94,18 @@ const login = async (identity: string, password: string, remember = false) => {
   await ensureSession()
 }
 
+const switchSiteContext = async (siteId: number | null) => {
+  const response = await $api<AuthResponse>('/auth/site-context', {
+    method: 'PUT',
+    body: {
+      site_id: siteId,
+    },
+  })
+
+  applyAuthPayload(response.data)
+  initialized.value = true
+}
+
 const logout = async () => {
   try {
     await $api('/auth/logout', { method: 'POST' })
@@ -117,6 +129,7 @@ export const useAuthSession = () => ({
   isAuthenticated,
   ensureSession,
   login,
+  switchSiteContext,
   logout,
   hasRole,
   can,
