@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ExpenseController as ApiExpenseController;
 use App\Http\Controllers\Api\PaymentController as ApiPaymentController;
 use App\Http\Controllers\Api\ProfileController as ApiProfileController;
 use App\Http\Controllers\Api\ReportController as ApiReportController;
+use App\Http\Controllers\Api\ReportPdfController as ApiReportPdfController;
 use App\Http\Controllers\Api\ReceiptController as ApiReceiptController;
 use App\Http\Controllers\Api\SiteSettingsController as ApiSiteSettingsController;
 use App\Http\Controllers\Api\SuperSiteController as ApiSuperSiteController;
@@ -26,7 +27,7 @@ Route::prefix('api/v1/auth')->group(function () {
     Route::put('/site-context', [AuthController::class, 'setSiteContext'])->middleware('auth')->name('api.auth.site-context');
 });
 
-Route::prefix('api/v1')->middleware(['auth', 'site.scope'])->group(function () {
+Route::prefix('api/v1')->middleware(['auth', 'site.scope', 'throttle:api'])->group(function () {
     Route::get('/dashboard', [ApiDashboardController::class, 'index'])->name('api.dashboard.index');
 
     Route::get('/charges', [ApiChargeController::class, 'index'])->name('api.charges.index');
@@ -114,13 +115,13 @@ Route::prefix('api/v1')->middleware(['auth', 'site.scope'])->group(function () {
     Route::get('/reports/debt-status', [ApiReportController::class, 'debtStatus'])->name('api.reports.debt-status');
     Route::get('/reports/receivable-status', [ApiReportController::class, 'receivableStatus'])->name('api.reports.receivable-status');
     Route::get('/reports/charge-list', [ApiReportController::class, 'chargeList'])->name('api.reports.charge-list');
-    Route::get('/reports/cash-statement/pdf', [ApiReportController::class, 'cashStatementPdf'])->name('api.reports.cash-statement.pdf');
-    Route::get('/reports/account-statement/pdf', [ApiReportController::class, 'accountStatementPdf'])->name('api.reports.account-statement.pdf');
-    Route::get('/reports/collections/pdf', [ApiReportController::class, 'collectionsPdf'])->name('api.reports.collections.pdf');
-    Route::get('/reports/payments/pdf', [ApiReportController::class, 'paymentsPdf'])->name('api.reports.payments.pdf');
-    Route::get('/reports/debt-status/pdf', [ApiReportController::class, 'debtStatusPdf'])->name('api.reports.debt-status.pdf');
-    Route::get('/reports/receivable-status/pdf', [ApiReportController::class, 'receivableStatusPdf'])->name('api.reports.receivable-status.pdf');
-    Route::get('/reports/charge-list/pdf', [ApiReportController::class, 'chargeListPdf'])->name('api.reports.charge-list.pdf');
+    Route::get('/reports/cash-statement/pdf', [ApiReportPdfController::class, 'cashStatement'])->name('api.reports.cash-statement.pdf');
+    Route::get('/reports/account-statement/pdf', [ApiReportPdfController::class, 'accountStatement'])->name('api.reports.account-statement.pdf');
+    Route::get('/reports/collections/pdf', [ApiReportPdfController::class, 'collections'])->name('api.reports.collections.pdf');
+    Route::get('/reports/payments/pdf', [ApiReportPdfController::class, 'payments'])->name('api.reports.payments.pdf');
+    Route::get('/reports/debt-status/pdf', [ApiReportPdfController::class, 'debtStatus'])->name('api.reports.debt-status.pdf');
+    Route::get('/reports/receivable-status/pdf', [ApiReportPdfController::class, 'receivableStatus'])->name('api.reports.receivable-status.pdf');
+    Route::get('/reports/charge-list/pdf', [ApiReportPdfController::class, 'chargeList'])->name('api.reports.charge-list.pdf');
 
     Route::put('/profile/password', [ApiProfileController::class, 'updatePassword'])->name('api.profile.password');
 

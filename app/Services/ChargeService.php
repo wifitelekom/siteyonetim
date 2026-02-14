@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Charge;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
 class ChargeService
@@ -51,10 +52,8 @@ class ChargeService
                             'created_by' => $data['created_by'] ?? auth()->id(),
                         ]);
                         $count++;
-                    } catch (\Illuminate\Database\QueryException $e) {
-                        if ($e->errorInfo[1] !== 1062) {
-                            throw $e;
-                        }
+                    } catch (UniqueConstraintViolationException) {
+                        // Duplicate charge already exists, skip silently
                     }
                 }
             }

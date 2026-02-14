@@ -3,13 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AddResidentRequest;
 use App\Http\Requests\StoreApartmentRequest;
 use App\Http\Requests\UpdateApartmentRequest;
+use App\Http\Resources\ApartmentResource;
 use App\Models\Apartment;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class ApartmentController extends Controller
 {
@@ -49,7 +50,7 @@ class ApartmentController extends Controller
             ->withQueryString();
 
         return response()->json([
-            'data' => $apartments->through(fn (Apartment $apartment) => $this->mapApartment($apartment))->items(),
+            'data' => ApartmentResource::collection($apartments)->resolve(),
             'meta' => [
                 'current_page' => $apartments->currentPage(),
                 'last_page' => $apartments->lastPage(),
@@ -96,7 +97,7 @@ class ApartmentController extends Controller
 
         return response()->json([
             'message' => 'Daire olusturuldu.',
-            'data' => $this->mapApartment($apartment),
+            'data' => new ApartmentResource($apartment),
         ], 201);
     }
 
@@ -127,7 +128,7 @@ class ApartmentController extends Controller
 
         return response()->json([
             'data' => [
-                ...$this->mapApartment($apartment),
+                ...((new ApartmentResource($apartment))->resolve()),
                 'users' => $apartment->users->map(function (User $user) {
                     return [
                         'id' => $user->id,
@@ -180,7 +181,7 @@ class ApartmentController extends Controller
 
         return response()->json([
             'message' => 'Daire guncellendi.',
-            'data' => $this->mapApartment($apartment),
+            'data' => new ApartmentResource($apartment),
         ]);
     }
 
@@ -201,20 +202,11 @@ class ApartmentController extends Controller
         ]);
     }
 
-    public function addResident(Request $request, Apartment $apartment): JsonResponse
+    public function addResident(AddResidentRequest $request, Apartment $apartment): JsonResponse
     {
         $this->authorize('update', $apartment);
 
-        $siteId = $request->user()->site_id;
-
-        $validated = $request->validate([
-            'user_id' => [
-                'required',
-                Rule::exists('users', 'id')->where(fn ($query) => $query->where('site_id', $siteId)),
-            ],
-            'relation_type' => ['required', 'in:owner,tenant'],
-            'start_date' => ['nullable', 'date'],
-        ]);
+        $validated = $request->validated();
 
         $apartment->users()->syncWithoutDetaching([
             $validated['user_id'] => [
@@ -237,31 +229,5 @@ class ApartmentController extends Controller
         return response()->json([
             'message' => 'Sakin kaldirildi.',
         ]);
-    }
-
-    private function mapApartment(Apartment $apartment): array
-    {
-        $owner = $apartment->owners->first();
-        $tenant = $apartment->tenants->first();
-
-        return [
-            'id' => $apartment->id,
-            'block' => $apartment->block,
-            'floor' => $apartment->floor,
-            'number' => $apartment->number,
-            'm2' => $apartment->m2 !== null ? (float) $apartment->m2 : null,
-            'arsa_payi' => $apartment->arsa_payi !== null ? (float) $apartment->arsa_payi : null,
-            'is_active' => (bool) $apartment->is_active,
-            'full_label' => $apartment->full_label,
-            'resident_count' => (int) ($apartment->users_count ?? 0),
-            'current_owner' => $owner ? [
-                'id' => $owner->id,
-                'name' => $owner->name,
-            ] : null,
-            'current_tenant' => $tenant ? [
-                'id' => $tenant->id,
-                'name' => $tenant->name,
-            ] : null,
-        ];
     }
 }

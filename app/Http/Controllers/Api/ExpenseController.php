@@ -6,6 +6,7 @@ use App\Enums\ExpenseStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MakePaymentRequest;
 use App\Http\Requests\StoreExpenseRequest;
+use App\Http\Resources\ExpenseResource;
 use App\Models\Account;
 use App\Models\CashAccount;
 use App\Models\Expense;
@@ -68,7 +69,7 @@ class ExpenseController extends Controller
             ->withQueryString();
 
         return response()->json([
-            'data' => $expenses->through(fn (Expense $expense) => $this->mapExpense($expense))->items(),
+            'data' => ExpenseResource::collection($expenses)->resolve(),
             'meta' => [
                 'current_page' => $expenses->currentPage(),
                 'last_page' => $expenses->lastPage(),
@@ -125,7 +126,7 @@ class ExpenseController extends Controller
 
         return response()->json([
             'message' => 'Gider olusturuldu.',
-            'data' => $this->mapExpense($expense),
+            'data' => new ExpenseResource($expense),
         ], 201);
     }
 
@@ -154,7 +155,7 @@ class ExpenseController extends Controller
 
         return response()->json([
             'data' => [
-                ...$this->mapExpense($expense),
+                ...(new ExpenseResource($expense))->resolve(),
                 'creator' => $expense->creator ? [
                     'id' => $expense->creator->id,
                     'name' => $expense->creator->name,
@@ -215,7 +216,7 @@ class ExpenseController extends Controller
 
         return response()->json([
             'message' => 'Odeme basariyla yapildi.',
-            'data' => $this->mapExpense($expense),
+            'data' => new ExpenseResource($expense),
             'payment' => [
                 'id' => $payment->id,
                 'total_amount' => (float) $payment->total_amount,
@@ -236,27 +237,5 @@ class ExpenseController extends Controller
         return response()->json([
             'message' => 'Gider silindi.',
         ]);
-    }
-
-    private function mapExpense(Expense $expense): array
-    {
-        return [
-            'id' => $expense->id,
-            'expense_date' => optional($expense->expense_date)->format('Y-m-d'),
-            'due_date' => optional($expense->due_date)->format('Y-m-d'),
-            'amount' => (float) $expense->amount,
-            'paid_amount' => (float) $expense->paid_amount,
-            'remaining' => (float) $expense->remaining,
-            'description' => $expense->description,
-            'status' => $expense->status->value,
-            'vendor' => $expense->vendor ? [
-                'id' => $expense->vendor->id,
-                'name' => $expense->vendor->name,
-            ] : null,
-            'account' => $expense->account ? [
-                'id' => $expense->account->id,
-                'name' => $expense->account->full_name,
-            ] : null,
-        ];
     }
 }

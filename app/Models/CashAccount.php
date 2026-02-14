@@ -51,7 +51,7 @@ class CashAccount extends Model
 
     public function getBalanceAttribute(): float
     {
-        if ($this->attributes['receipts_total'] ?? null !== null) {
+        if (($this->attributes['receipts_total'] ?? null) !== null) {
             return (float) $this->opening_balance
                 + (float) ($this->attributes['receipts_total'] ?? 0)
                 - (float) ($this->attributes['payments_total'] ?? 0);

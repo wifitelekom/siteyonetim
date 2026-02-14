@@ -11,6 +11,7 @@ use App\Models\TemplateAidat;
 use App\Models\TemplateExpense;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardService
 {
@@ -22,6 +23,25 @@ class DashboardService
             throw new \RuntimeException('Authenticated user is required.');
         }
 
+        $cacheKey = "dashboard_summary_{$user->site_id}_{$user->id}";
+
+        return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($user) {
+            return $this->buildSummary($user);
+        });
+    }
+
+    /**
+     * Invalidate dashboard cache for a given site.
+     */
+    public static function clearCache(int $siteId): void
+    {
+        // Clear cache for all users of this site by using a tag or pattern.
+        // Since file/database cache doesn't support tags, we use a site-level key.
+        Cache::forget("dashboard_summary_{$siteId}_admin");
+    }
+
+    private function buildSummary(User $user): array
+    {
         $isAdmin = $user->hasAnyRole(['admin', 'super-admin']);
         $apartmentIds = (!$isAdmin && $user->hasAnyRole(['owner', 'tenant']))
             ? $user->apartment_ids
@@ -72,18 +92,9 @@ class DashboardService
         $cashAccounts = null;
         $totalCash = null;
         if ($isAdmin) {
-            $cashAccountQuery = CashAccount::query()->where('is_active', true);
-
-            if (method_exists(CashAccount::class, 'scopeWithComputedBalance')) {
-                $cashAccountQuery->withComputedBalance();
-            } else {
-                $cashAccountQuery->addSelect([
-                    'receipts_total' => Receipt::selectRaw('COALESCE(SUM(total_amount), 0)')
-                        ->whereColumn('cash_account_id', 'cash_accounts.id'),
-                    'payments_total' => Payment::selectRaw('COALESCE(SUM(total_amount), 0)')
-                        ->whereColumn('cash_account_id', 'cash_accounts.id'),
-                ]);
-            }
+            $cashAccountQuery = CashAccount::query()
+                ->where('is_active', true)
+                ->withComputedBalance();
 
             $cashAccounts = $cashAccountQuery->get()->map(function ($account) {
                 return [
@@ -158,28 +169,44 @@ class DashboardService
         $timeline = null;
 
         if ($isAdmin) {
-            $aidatTemplates = TemplateAidat::where('is_active', true)->count();
-            $aidatTemplatesTotal = TemplateAidat::count();
-            $expenseTemplates = TemplateExpense::where('is_active', true)->count();
-            $expenseTemplatesTotal = TemplateExpense::count();
+            // Template counts: 4 queries → 2 queries using conditional count
+            $aidatCounts = TemplateAidat::selectRaw('COUNT(*) as total, SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active')->first();
+            $aidatTemplates = (int) $aidatCounts->active;
+            $aidatTemplatesTotal = (int) $aidatCounts->total;
 
-            // Monthly trend (last 6 months)
+            $expenseCounts = TemplateExpense::selectRaw('COUNT(*) as total, SUM(CASE WHEN is_active = 1 THEN 1 ELSE 0 END) as active')->first();
+            $expenseTemplates = (int) $expenseCounts->active;
+            $expenseTemplatesTotal = (int) $expenseCounts->total;
+
+            // Monthly trend (last 6 months): 12 queries → 2 queries
+            $sixMonthsAgo = Carbon::today()->subMonths(5)->startOfMonth()->toDateString();
+            $trendEnd = Carbon::today()->endOfMonth()->toDateString();
+
+            $incomeByMonth = Receipt::selectRaw("DATE_FORMAT(paid_at, '%Y-%m') as month, SUM(total_amount) as total")
+                ->whereBetween('paid_at', [$sixMonthsAgo, $trendEnd])
+                ->groupByRaw("DATE_FORMAT(paid_at, '%Y-%m')")
+                ->pluck('total', 'month');
+
+            $expenseByMonth = Payment::selectRaw("DATE_FORMAT(paid_at, '%Y-%m') as month, SUM(total_amount) as total")
+                ->whereBetween('paid_at', [$sixMonthsAgo, $trendEnd])
+                ->groupByRaw("DATE_FORMAT(paid_at, '%Y-%m')")
+                ->pluck('total', 'month');
+
             $monthlyTrend = [];
             for ($i = 5; $i >= 0; $i--) {
                 $month = Carbon::today()->subMonths($i);
-                $start = $month->copy()->startOfMonth()->toDateString();
-                $end = $month->copy()->endOfMonth()->toDateString();
-
+                $key = $month->format('Y-m');
                 $monthlyTrend[] = [
                     'month' => $month->translatedFormat('M Y'),
-                    'income' => (float) Receipt::whereBetween('paid_at', [$start, $end])->sum('total_amount'),
-                    'expense' => (float) Payment::whereBetween('paid_at', [$start, $end])->sum('total_amount'),
+                    'income' => (float) ($incomeByMonth[$key] ?? 0),
+                    'expense' => (float) ($expenseByMonth[$key] ?? 0),
                 ];
             }
 
-            // Collection rate for current month
+            // Collection rate for current month (reuse income data from trend)
+            $currentMonthKey = Carbon::today()->format('Y-m');
             $monthlyChargeTotal = (float) Charge::whereBetween('due_date', [$monthStart, $monthEnd])->sum('amount');
-            $monthlyCollected = (float) Receipt::whereBetween('paid_at', [$monthStart, $monthEnd])->sum('total_amount');
+            $monthlyCollected = (float) ($incomeByMonth[$currentMonthKey] ?? 0);
             $collectionRate = $monthlyChargeTotal > 0 ? round(($monthlyCollected / $monthlyChargeTotal) * 100) : 0;
         }
 

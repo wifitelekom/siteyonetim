@@ -66,7 +66,7 @@ const onCancel = () => {
           variant="elevated"
           @click="onConfirmation"
         >
-          Confirm
+          Onayla
         </VBtn>
 
         <VBtn
@@ -74,7 +74,7 @@ const onCancel = () => {
           variant="outlined"
           @click="onCancel"
         >
-          Cancel
+          Iptal
         </VBtn>
       </VCardText>
     </VCard>
@@ -109,7 +109,7 @@ const onCancel = () => {
           color="success"
           @click="unsubscribed = false"
         >
-          Ok
+          Tamam
         </VBtn>
       </VCardText>
     </VCard>
@@ -142,7 +142,7 @@ const onCancel = () => {
           color="success"
           @click="cancelled = false"
         >
-          Ok
+          Tamam
         </VBtn>
       </VCardText>
     </VCard>

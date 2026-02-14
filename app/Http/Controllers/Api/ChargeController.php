@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CollectPaymentRequest;
 use App\Http\Requests\StoreBulkChargeRequest;
 use App\Http\Requests\StoreChargeRequest;
+use App\Http\Resources\ChargeResource;
 use App\Models\Account;
 use App\Models\Apartment;
 use App\Models\CashAccount;
@@ -68,7 +69,7 @@ class ChargeController extends Controller
             ->withQueryString();
 
         return response()->json([
-            'data' => $charges->through(fn (Charge $charge) => $this->mapCharge($charge))->items(),
+            'data' => ChargeResource::collection($charges)->resolve(),
             'meta' => [
                 'current_page' => $charges->currentPage(),
                 'last_page' => $charges->lastPage(),
@@ -130,7 +131,7 @@ class ChargeController extends Controller
 
         return response()->json([
             'message' => 'Tahakkuk olusturuldu.',
-            'data' => $this->mapCharge($charge),
+            'data' => new ChargeResource($charge),
         ], 201);
     }
 
@@ -173,7 +174,7 @@ class ChargeController extends Controller
 
         return response()->json([
             'data' => [
-                ...$this->mapCharge($charge),
+                ...(new ChargeResource($charge))->resolve(),
                 'creator' => $charge->creator ? [
                     'id' => $charge->creator->id,
                     'name' => $charge->creator->name,
@@ -235,7 +236,7 @@ class ChargeController extends Controller
 
         return response()->json([
             'message' => 'Tahsilat basariyla alindi.',
-            'data' => $this->mapCharge($charge),
+            'data' => new ChargeResource($charge),
             'receipt' => [
                 'id' => $receipt->id,
                 'receipt_no' => $receipt->receipt_no,
@@ -257,28 +258,5 @@ class ChargeController extends Controller
         return response()->json([
             'message' => 'Tahakkuk silindi.',
         ]);
-    }
-
-    private function mapCharge(Charge $charge): array
-    {
-        return [
-            'id' => $charge->id,
-            'period' => $charge->period,
-            'due_date' => optional($charge->due_date)->format('Y-m-d'),
-            'amount' => (float) $charge->amount,
-            'paid_amount' => (float) $charge->paid_amount,
-            'remaining' => (float) $charge->remaining,
-            'description' => $charge->description,
-            'status' => $charge->status->value,
-            'charge_type' => $charge->charge_type?->value ?? 'aidat',
-            'apartment' => $charge->apartment ? [
-                'id' => $charge->apartment->id,
-                'label' => $charge->apartment->full_label,
-            ] : null,
-            'account' => $charge->account ? [
-                'id' => $charge->account->id,
-                'name' => $charge->account->full_name,
-            ] : null,
-        ];
     }
 }

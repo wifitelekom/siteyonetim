@@ -3,14 +3,15 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\AddApartmentToUserRequest;
 use App\Http\Requests\StoreUserRequest;
 use App\Http\Requests\UpdateUserRequest;
+use App\Http\Resources\UserResource;
 use App\Models\Apartment;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -43,7 +44,7 @@ class UserController extends Controller
             ->withQueryString();
 
         return response()->json([
-            'data' => $users->through(fn (User $user) => $this->mapUser($user))->items(),
+            'data' => UserResource::collection($users)->resolve(),
             'meta' => [
                 'current_page' => $users->currentPage(),
                 'last_page' => $users->lastPage(),
@@ -109,7 +110,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Kullanici olusturuldu.',
-            'data' => $this->mapUser($user),
+            'data' => new UserResource($user),
         ], 201);
     }
 
@@ -141,7 +142,7 @@ class UserController extends Controller
             ])->values();
 
         return response()->json([
-            'data' => $this->mapUser($user, true),
+            'data' => new UserResource($user),
             'meta' => [
                 'available_apartments' => $availableApartments,
                 'roles' => [
@@ -182,7 +183,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Kullanici guncellendi.',
-            'data' => $this->mapUser($user),
+            'data' => new UserResource($user),
         ]);
     }
 
@@ -203,21 +204,11 @@ class UserController extends Controller
         ]);
     }
 
-    public function addApartment(Request $request, User $user): JsonResponse
+    public function addApartment(AddApartmentToUserRequest $request, User $user): JsonResponse
     {
         $this->authorize('update', $user);
 
-        $siteId = $request->user()->site_id;
-
-        $validated = $request->validate([
-            'apartment_id' => [
-                'required',
-                Rule::exists('apartments', 'id')
-                    ->where(fn ($query) => $query->where('site_id', $siteId)->whereNull('deleted_at')),
-            ],
-            'relation_type' => ['required', 'in:owner,tenant'],
-            'start_date' => ['nullable', 'date'],
-        ]);
+        $validated = $request->validated();
 
         $user->apartments()->syncWithoutDetaching([
             $validated['apartment_id'] => [
@@ -244,51 +235,5 @@ class UserController extends Controller
         return response()->json([
             'message' => 'Daire iliskisi kaldirildi.',
         ]);
-    }
-
-    private function mapUser(User $user, bool $includeApartments = false): array
-    {
-        $roles = $user->roles->pluck('name')->values();
-        $primaryRole = $roles->first();
-
-        $payload = [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'phone' => $user->phone,
-            'tc_kimlik' => $user->tc_kimlik,
-            'role' => $primaryRole,
-            'role_label' => $this->roleLabel($primaryRole),
-            'roles' => $roles,
-            'created_at' => optional($user->created_at)->toDateString(),
-            'apartment_count' => (int) ($user->apartments_count ?? 0),
-        ];
-
-        if ($includeApartments) {
-            $payload['apartments'] = $user->apartments->map(function (Apartment $apartment) {
-                return [
-                    'id' => $apartment->id,
-                    'label' => $apartment->full_label,
-                    'relation_type' => $apartment->pivot?->relation_type,
-                    'relation_label' => $apartment->pivot?->relation_type === 'owner' ? 'Ev Sahibi' : 'Kiraci',
-                    'start_date' => $apartment->pivot?->start_date,
-                    'end_date' => $apartment->pivot?->end_date,
-                ];
-            })->values();
-            $payload['apartment_count'] = $payload['apartments']->count();
-        }
-
-        return $payload;
-    }
-
-    private function roleLabel(?string $role): string
-    {
-        return match ($role) {
-            'admin' => 'Yonetici',
-            'owner' => 'Ev Sahibi',
-            'tenant' => 'Kiraci',
-            'vendor' => 'Tedarikci',
-            default => 'Rol Yok',
-        };
     }
 }

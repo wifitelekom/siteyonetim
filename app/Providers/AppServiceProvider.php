@@ -39,6 +39,14 @@ class AppServiceProvider extends ServiceProvider
             return Limit::perMinute(5)->by($request->ip());
         });
 
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
+        });
+
+        RateLimiter::for('api-write', function (Request $request) {
+            return Limit::perMinute(30)->by($request->user()?->id ?: $request->ip());
+        });
+
         Gate::policy(Charge::class, ChargePolicy::class);
         Gate::policy(Receipt::class, ReceiptPolicy::class);
         Gate::policy(Expense::class, ExpensePolicy::class);

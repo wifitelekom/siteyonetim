@@ -51,33 +51,41 @@ class ReportService
         ];
     }
 
-    public function collectionsReport(Carbon $from, Carbon $to): array
+    public function collectionsReport(Carbon $from, Carbon $to, int $perPage = 0): array
     {
-        $receipts = Receipt::with(['apartment', 'cashAccount', 'items.charge'])
+        $query = Receipt::with(['apartment', 'cashAccount', 'items.charge'])
             ->whereBetween('paid_at', [$from->toDateString(), $to->toDateString()])
-            ->orderBy('paid_at')
-            ->get();
+            ->orderBy('paid_at');
+
+        $total = (float) Receipt::whereBetween('paid_at', [$from->toDateString(), $to->toDateString()])
+            ->sum('total_amount');
+
+        $receipts = $perPage > 0 ? $query->paginate($perPage)->withQueryString() : $query->get();
 
         return [
             'from' => $from,
             'to' => $to,
             'receipts' => $receipts,
-            'total' => $receipts->sum('total_amount'),
+            'total' => $total,
         ];
     }
 
-    public function paymentsReport(Carbon $from, Carbon $to): array
+    public function paymentsReport(Carbon $from, Carbon $to, int $perPage = 0): array
     {
-        $payments = Payment::with(['vendor', 'cashAccount', 'items.expense'])
+        $query = Payment::with(['vendor', 'cashAccount', 'items.expense'])
             ->whereBetween('paid_at', [$from->toDateString(), $to->toDateString()])
-            ->orderBy('paid_at')
-            ->get();
+            ->orderBy('paid_at');
+
+        $total = (float) Payment::whereBetween('paid_at', [$from->toDateString(), $to->toDateString()])
+            ->sum('total_amount');
+
+        $payments = $perPage > 0 ? $query->paginate($perPage)->withQueryString() : $query->get();
 
         return [
             'from' => $from,
             'to' => $to,
             'payments' => $payments,
-            'total' => $payments->sum('total_amount'),
+            'total' => $total,
         ];
     }
 
@@ -95,7 +103,7 @@ class ReportService
             $apartment = $items->first()->apartment;
             return [
                 'apartment' => $apartment->full_label,
-                'resident' => $apartment->users->first()->name ?? '-',
+                'resident' => $apartment->users->first()?->name ?? '-',
                 'total' => $items->sum('amount'),
                 'paid' => $items->sum('paid_amount'),
                 'remaining' => $items->sum(fn ($c) => $c->remaining),
@@ -133,19 +141,24 @@ class ReportService
         ];
     }
 
-    public function chargeList(string $period): array
+    public function chargeList(string $period, int $perPage = 0): array
     {
-        $charges = Charge::with(['apartment', 'account'])
+        $query = Charge::with(['apartment', 'account'])
             ->where('period', $period)
-            ->orderBy('apartment_id')
-            ->get();
+            ->orderBy('apartment_id');
+
+        $totals = Charge::where('period', $period)
+            ->selectRaw('SUM(amount) as total_amount, SUM(paid_amount) as total_paid, SUM(amount - paid_amount) as total_remaining')
+            ->first();
+
+        $charges = $perPage > 0 ? $query->paginate($perPage)->withQueryString() : $query->get();
 
         return [
             'period' => $period,
             'charges' => $charges,
-            'totalAmount' => $charges->sum('amount'),
-            'totalPaid' => $charges->sum('paid_amount'),
-            'totalRemaining' => $charges->sum(fn ($c) => $c->remaining),
+            'totalAmount' => (float) ($totals->total_amount ?? 0),
+            'totalPaid' => (float) ($totals->total_paid ?? 0),
+            'totalRemaining' => (float) ($totals->total_remaining ?? 0),
         ];
     }
 }

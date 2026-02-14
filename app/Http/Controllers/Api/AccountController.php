@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\AccountType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAccountRequest;
+use App\Http\Resources\AccountResource;
 use App\Models\Account;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -32,7 +33,7 @@ class AccountController extends Controller
         $accounts = $query->paginate(20)->withQueryString();
 
         return response()->json([
-            'data' => $accounts->through(fn (Account $account) => $this->mapAccount($account))->items(),
+            'data' => AccountResource::collection($accounts)->resolve(),
             'meta' => [
                 'current_page' => $accounts->currentPage(),
                 'last_page' => $accounts->lastPage(),
@@ -64,7 +65,7 @@ class AccountController extends Controller
 
         return response()->json([
             'message' => 'Hesap olusturuldu.',
-            'data' => $this->mapAccount($account),
+            'data' => new AccountResource($account),
         ], 201);
     }
 
@@ -77,7 +78,7 @@ class AccountController extends Controller
 
         return response()->json([
             'message' => 'Hesap guncellendi.',
-            'data' => $this->mapAccount($account),
+            'data' => new AccountResource($account),
         ]);
     }
 
@@ -96,18 +97,5 @@ class AccountController extends Controller
         return response()->json([
             'message' => 'Hesap silindi.',
         ]);
-    }
-
-    private function mapAccount(Account $account): array
-    {
-        return [
-            'id' => $account->id,
-            'code' => $account->code,
-            'name' => $account->name,
-            'type' => $account->type?->value ?? (string) $account->type,
-            'type_label' => $account->type?->label() ?? (string) $account->type,
-            'is_active' => (bool) $account->is_active,
-            'full_name' => $account->full_name,
-        ];
     }
 }

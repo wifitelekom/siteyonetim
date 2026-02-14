@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\CashAccountType;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCashAccountRequest;
+use App\Http\Resources\CashAccountResource;
 use App\Models\CashAccount;
 use App\Services\CashAccountService;
 use Carbon\Carbon;
@@ -35,7 +36,7 @@ class CashAccountController extends Controller
         $cashAccounts = $query->paginate(20)->withQueryString();
 
         return response()->json([
-            'data' => $cashAccounts->through(fn (CashAccount $account) => $this->mapCashAccount($account))->items(),
+            'data' => CashAccountResource::collection($cashAccounts)->resolve(),
             'meta' => [
                 'current_page' => $cashAccounts->currentPage(),
                 'last_page' => $cashAccounts->lastPage(),
@@ -70,7 +71,7 @@ class CashAccountController extends Controller
 
         return response()->json([
             'message' => 'Kasa/Banka hesabi olusturuldu.',
-            'data' => $this->mapCashAccount($cashAccount),
+            'data' => new CashAccountResource($cashAccount),
         ], 201);
     }
 
@@ -88,7 +89,7 @@ class CashAccountController extends Controller
 
         return response()->json([
             'message' => 'Kasa/Banka hesabi guncellendi.',
-            'data' => $this->mapCashAccount($cashAccount),
+            'data' => new CashAccountResource($cashAccount),
         ]);
     }
 
@@ -129,7 +130,7 @@ class CashAccountController extends Controller
 
         return response()->json([
             'data' => [
-                'account' => $this->mapCashAccount($cashAccount),
+                'account' => new CashAccountResource($cashAccount),
                 'from' => $from->toDateString(),
                 'to' => $to->toDateString(),
                 'opening_balance' => (float) $statement['opening_balance'],
@@ -147,18 +148,5 @@ class CashAccountController extends Controller
                 })->values(),
             ],
         ]);
-    }
-
-    private function mapCashAccount(CashAccount $cashAccount): array
-    {
-        return [
-            'id' => $cashAccount->id,
-            'name' => $cashAccount->name,
-            'type' => $cashAccount->type?->value ?? (string) $cashAccount->type,
-            'type_label' => $cashAccount->type?->label() ?? (string) $cashAccount->type,
-            'opening_balance' => (float) $cashAccount->opening_balance,
-            'balance' => (float) $cashAccount->balance,
-            'is_active' => (bool) $cashAccount->is_active,
-        ];
     }
 }

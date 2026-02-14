@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreVendorRequest;
 use App\Http\Requests\UpdateVendorRequest;
+use App\Http\Resources\VendorResource;
 use App\Models\Vendor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -36,7 +37,7 @@ class VendorController extends Controller
         $vendors = $query->paginate(20)->withQueryString();
 
         return response()->json([
-            'data' => $vendors->through(fn (Vendor $vendor) => $this->mapVendor($vendor))->items(),
+            'data' => VendorResource::collection($vendors)->resolve(),
             'meta' => [
                 'current_page' => $vendors->currentPage(),
                 'last_page' => $vendors->lastPage(),
@@ -53,7 +54,7 @@ class VendorController extends Controller
         $vendor->loadCount('expenses');
 
         return response()->json([
-            'data' => $this->mapVendor($vendor),
+            'data' => new VendorResource($vendor),
         ]);
     }
 
@@ -66,7 +67,7 @@ class VendorController extends Controller
 
         return response()->json([
             'message' => 'Tedarikci olusturuldu.',
-            'data' => $this->mapVendor($vendor),
+            'data' => new VendorResource($vendor),
         ], 201);
     }
 
@@ -79,7 +80,7 @@ class VendorController extends Controller
 
         return response()->json([
             'message' => 'Tedarikci guncellendi.',
-            'data' => $this->mapVendor($vendor),
+            'data' => new VendorResource($vendor),
         ]);
     }
 
@@ -98,19 +99,5 @@ class VendorController extends Controller
         return response()->json([
             'message' => 'Tedarikci silindi.',
         ]);
-    }
-
-    private function mapVendor(Vendor $vendor): array
-    {
-        return [
-            'id' => $vendor->id,
-            'name' => $vendor->name,
-            'tax_no' => $vendor->tax_no,
-            'phone' => $vendor->phone,
-            'email' => $vendor->email,
-            'address' => $vendor->address,
-            'is_active' => (bool) $vendor->is_active,
-            'expenses_count' => (int) ($vendor->expenses_count ?? 0),
-        ];
     }
 }
