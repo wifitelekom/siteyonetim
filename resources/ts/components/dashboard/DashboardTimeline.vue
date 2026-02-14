@@ -1,5 +1,6 @@
 <script setup lang="ts">
 interface TimelineItem {
+  uid: string
   date: string
   date_display: string
   type: 'receivable' | 'payable' | 'past_receipt'
@@ -49,8 +50,8 @@ const getTimelineIcon = (type: string) => {
         truncate-line="both"
       >
         <VTimelineItem
-          v-for="(item, index) in items.slice(0, 8)"
-          :key="index"
+          v-for="item in items.slice(0, 8)"
+          :key="item.uid"
           :dot-color="getTimelineColor(item.type)"
           size="x-small"
         >

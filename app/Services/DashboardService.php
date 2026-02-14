@@ -88,6 +88,7 @@ class DashboardService
             }
             $recentReceipts = $receiptQuery->get()->map(function ($r) {
                 return [
+                    'id' => $r->id,
                     'date' => $r->paid_at,
                     'type' => 'receipt',
                     'description' => 'Tahsilat' . ($r->apartment ? ' - ' . $r->apartment->full_label : ''),
@@ -104,6 +105,7 @@ class DashboardService
             }
             $recentPayments = $paymentQuery->get()->map(function ($p) {
                 return [
+                    'id' => $p->id,
                     'date' => $p->paid_at,
                     'type' => 'payment',
                     'description' => 'Ödeme' . ($p->vendor ? ' - ' . $p->vendor->name : ''),
@@ -176,6 +178,7 @@ class DashboardService
 
                 $timeline = $timeline->concat($chargeQuery->get()->map(function ($c) {
                     return [
+                        'uid' => 'charge-' . $c->id,
                         'date' => $c->due_date->format('Y-m-d'),
                         'date_display' => $c->due_date->format('d.m.Y'),
                         'type' => 'receivable',
@@ -196,6 +199,7 @@ class DashboardService
 
                 $timeline = $timeline->concat($expenseQuery->get()->map(function ($e) {
                     return [
+                        'uid' => 'expense-' . $e->id,
                         'date' => $e->due_date->format('Y-m-d'),
                         'date_display' => $e->due_date->format('d.m.Y'),
                         'type' => 'payable',
@@ -216,6 +220,7 @@ class DashboardService
 
                 $timeline = $timeline->concat($pastReceiptQuery->get()->map(function ($r) {
                     return [
+                        'uid' => 'receipt-' . $r->id,
                         'date' => Carbon::parse($r->paid_at)->format('Y-m-d'),
                         'date_display' => Carbon::parse($r->paid_at)->format('d.m.Y'),
                         'type' => 'past_receipt',

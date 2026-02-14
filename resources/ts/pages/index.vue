@@ -22,6 +22,7 @@ interface DashboardSummary {
   totalCash: number | null
   cashAccounts: Array<{ id: number; name: string; type: string; balance: number }> | null
   recentTransactions: Array<{
+    id: number
     date: string
     type: 'receipt' | 'payment'
     description: string
@@ -34,6 +35,7 @@ interface DashboardSummary {
   expenseTemplates: number | null
   expenseTemplatesTotal: number | null
   timeline: Array<{
+    uid: string
     date: string
     date_display: string
     type: 'receivable' | 'payable' | 'past_receipt'
@@ -454,64 +456,81 @@ onMounted(fetchDashboard)
               <VCardSubtitle>{{ $t('dashboard.recent.subtitle') }}</VCardSubtitle>
             </VCardItem>
 
-            <VTable density="comfortable">
-              <thead>
-                <tr>
-                  <th>{{ $t('common.date') }}</th>
-                  <th>{{ $t('common.description') }}</th>
-                  <th>{{ $t('common.type') }}</th>
-                  <th class="text-right">
-                    {{ $t('common.amount') }}
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
-                  v-for="transaction in summary.recentTransactions"
-                  :key="`${transaction.date}-${transaction.type}-${transaction.amount}`"
-                >
-                  <td>
-                    <span class="text-body-2">{{ formatDate(transaction.date) }}</span>
-                  </td>
-                  <td>
-                    <span class="text-body-2">{{ transaction.description }}</span>
-                  </td>
-                  <td>
-                    <VChip
-                      size="small"
-                      :color="transaction.type === 'receipt' ? 'success' : 'error'"
-                      variant="tonal"
-                    >
-                      <VIcon
-                        :icon="transaction.type === 'receipt' ? 'ri-arrow-down-line' : 'ri-arrow-up-line'"
-                        start
-                        size="14"
-                      />
-                      {{ transaction.type === 'receipt' ? $t('dashboard.recent.receipt') : $t('dashboard.recent.payment') }}
-                    </VChip>
-                  </td>
-                  <td class="text-right">
-                    <span
-                      class="font-weight-bold"
-                      :class="transaction.type === 'receipt' ? 'text-success' : 'text-error'"
-                    >
-                      {{ transaction.type === 'receipt' ? '+' : '-' }}{{ formatCurrency(transaction.amount) }}
-                    </span>
-                  </td>
-                </tr>
-                <tr v-if="summary.recentTransactions.length === 0">
-                  <td
-                    colspan="4"
-                    class="text-center text-medium-emphasis py-6"
+            <div class="dashboard-recent-table-wrap">
+              <VTable density="comfortable">
+                <thead>
+                  <tr>
+                    <th>{{ $t('common.date') }}</th>
+                    <th>{{ $t('common.description') }}</th>
+                    <th>{{ $t('common.type') }}</th>
+                    <th class="text-right">
+                      {{ $t('common.amount') }}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr
+                    v-for="transaction in summary.recentTransactions"
+                    :key="`${transaction.type}-${transaction.id}`"
                   >
-                    {{ $t('dashboard.recent.empty') }}
-                  </td>
-                </tr>
-              </tbody>
-            </VTable>
+                    <td>
+                      <span class="text-body-2">{{ formatDate(transaction.date) }}</span>
+                    </td>
+                    <td>
+                      <span class="text-body-2 dashboard-recent-description">{{ transaction.description }}</span>
+                    </td>
+                    <td>
+                      <VChip
+                        size="small"
+                        :color="transaction.type === 'receipt' ? 'success' : 'error'"
+                        variant="tonal"
+                      >
+                        <VIcon
+                          :icon="transaction.type === 'receipt' ? 'ri-arrow-down-line' : 'ri-arrow-up-line'"
+                          start
+                          size="14"
+                        />
+                        {{ transaction.type === 'receipt' ? $t('dashboard.recent.receipt') : $t('dashboard.recent.payment') }}
+                      </VChip>
+                    </td>
+                    <td class="text-right">
+                      <span
+                        class="font-weight-bold"
+                        :class="transaction.type === 'receipt' ? 'text-success' : 'text-error'"
+                      >
+                        {{ transaction.type === 'receipt' ? '+' : '-' }}{{ formatCurrency(transaction.amount) }}
+                      </span>
+                    </td>
+                  </tr>
+                  <tr v-if="summary.recentTransactions.length === 0">
+                    <td
+                      colspan="4"
+                      class="text-center text-medium-emphasis py-6"
+                    >
+                      {{ $t('dashboard.recent.empty') }}
+                    </td>
+                  </tr>
+                </tbody>
+              </VTable>
+            </div>
           </VCard>
         </VCol>
       </VRow>
     </div>
   </div>
 </template>
+
+<style scoped>
+.dashboard-recent-table-wrap {
+  overflow-x: auto;
+}
+
+.dashboard-recent-description {
+  display: inline-block;
+  max-inline-size: 34ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: bottom;
+  white-space: nowrap;
+}
+</style>
