@@ -14,8 +14,14 @@ use Carbon\Carbon;
 
 class DashboardService
 {
-    public function getSummary(User $user): array
+    public function getSummary(?User $user = null): array
     {
+        $user ??= auth()->user();
+
+        if (!$user instanceof User) {
+            throw new \RuntimeException('Authenticated user is required.');
+        }
+
         $isAdmin = $user->hasAnyRole(['admin', 'super-admin']);
         $apartmentIds = (!$isAdmin && $user->hasAnyRole(['owner', 'tenant']))
             ? $user->apartment_ids
