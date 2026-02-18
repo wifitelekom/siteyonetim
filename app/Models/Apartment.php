@@ -3,18 +3,24 @@
 namespace App\Models;
 
 use App\Traits\BelongsToSite;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Schema;
 
 class Apartment extends Model
 {
     use HasFactory, SoftDeletes, BelongsToSite;
 
+    private static ?bool $apartmentUserHasFamilyRoleColumn = null;
+
     protected $fillable = [
         'site_id',
+        'apartment_group_id',
         'block',
         'floor',
         'number',
@@ -29,11 +35,22 @@ class Apartment extends Model
         'is_active' => 'boolean',
     ];
 
+    public function group(): BelongsTo
+    {
+        return $this->belongsTo(ApartmentGroup::class, 'apartment_group_id');
+    }
+
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class)
+        $relation = $this->belongsToMany(User::class)
             ->withPivot('relation_type', 'start_date', 'end_date')
             ->withTimestamps();
+
+        if (self::hasApartmentUserFamilyRoleColumn()) {
+            $relation->withPivot('family_role');
+        }
+
+        return $relation;
     }
 
     public function owners(): BelongsToMany
@@ -54,6 +71,29 @@ class Apartment extends Model
     public function receipts(): HasMany
     {
         return $this->hasMany(Receipt::class);
+    }
+
+    public function scopeOrderedForDisplay(Builder $query): Builder
+    {
+        $driver = $query->getConnection()->getDriverName();
+
+        $isNumericExpression = match ($driver) {
+            'pgsql' => "TRIM(number) ~ '^[0-9]+$'",
+            'sqlite' => "TRIM(number) GLOB '[0-9]*' AND TRIM(number) NOT GLOB '*[^0-9]*'",
+            default => "TRIM(number) REGEXP '^[0-9]+$'",
+        };
+
+        $castExpression = match ($driver) {
+            'pgsql', 'sqlite' => 'CAST(TRIM(number) AS INTEGER)',
+            default => 'CAST(TRIM(number) AS UNSIGNED)',
+        };
+
+        return $query
+            ->orderBy('block')
+            ->orderBy('floor')
+            ->orderByRaw("CASE WHEN {$isNumericExpression} THEN 0 ELSE 1 END")
+            ->orderByRaw("CASE WHEN {$isNumericExpression} THEN {$castExpression} END")
+            ->orderByRaw('LOWER(TRIM(number))');
     }
 
     public function getFullLabelAttribute(): string
@@ -82,5 +122,14 @@ class Apartment extends Model
                     ->orWhere('apartment_user.end_date', '>=', now());
             })
             ->first();
+    }
+
+    private static function hasApartmentUserFamilyRoleColumn(): bool
+    {
+        if (self::$apartmentUserHasFamilyRoleColumn === null) {
+            self::$apartmentUserHasFamilyRoleColumn = Schema::hasColumn('apartment_user', 'family_role');
+        }
+
+        return self::$apartmentUserHasFamilyRoleColumn;
     }
 }

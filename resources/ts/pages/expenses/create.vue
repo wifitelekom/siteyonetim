@@ -13,11 +13,19 @@ interface ExpensesMetaResponse {
 }
 
 const { withAbort } = useAbortOnUnmount()
+const route = useRoute()
 const router = useRouter()
 const loading = ref(false)
 const loadingMeta = ref(false)
+const loadingCopy = ref(false)
 const errorMessage = ref('')
 const fieldErrors = ref<Record<string, string[]>>({})
+
+const copyId = computed(() => {
+  const val = route.query.copy
+  return val ? Number(val) : null
+})
+const isCopy = computed(() => copyId.value !== null)
 
 const vendors = ref<OptionItem[]>([])
 const accounts = ref<OptionItem[]>([])
@@ -29,6 +37,7 @@ const form = ref({
   due_date: '',
   amount: null as number | null,
   description: '',
+  invoice_no: '',
 })
 const formRef = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null)
 
@@ -74,6 +83,7 @@ const submit = async () => {
         due_date: form.value.due_date,
         amount: form.value.amount,
         description: form.value.description || null,
+        invoice_no: form.value.invoice_no || null,
       },
       signal,
     }))
@@ -90,7 +100,35 @@ const submit = async () => {
   }
 }
 
-onMounted(fetchMeta)
+const fetchCopySource = async () => {
+  if (!copyId.value) return
+  loadingCopy.value = true
+
+  try {
+    const response = await withAbort(signal =>
+      $api<{ data: { vendor: { id: number } | null; account: { id: number } | null; due_date: string; amount: number; description: string | null } }>(`/expenses/${copyId.value}`, { signal }),
+    )
+
+    form.value.vendor_id = response.data.vendor?.id ?? null
+    form.value.account_id = response.data.account?.id ?? null
+    form.value.expense_date = new Date().toISOString().slice(0, 10)
+    form.value.due_date = response.data.due_date
+    form.value.amount = response.data.amount
+    form.value.description = response.data.description ?? ''
+  }
+  catch (error) {
+    if (isAbortError(error)) return
+    errorMessage.value = getApiErrorMessage(error, 'Kaynak gider alinamadi.')
+  }
+  finally {
+    loadingCopy.value = false
+  }
+}
+
+onMounted(async () => {
+  await fetchMeta()
+  if (copyId.value) await fetchCopySource()
+})
 </script>
 
 <template>
@@ -99,10 +137,10 @@ onMounted(fetchMeta)
       <div class="d-flex align-center justify-space-between mb-2">
         <div>
           <h4 class="text-h4 mb-1">
-            Yeni Gider
+            {{ isCopy ? 'Gider Kopyala' : 'Yeni Gider' }}
           </h4>
           <p class="text-medium-emphasis mb-0">
-            Yeni bir gider kaydı oluşturun
+            {{ isCopy ? 'Mevcut giderden kopyalayarak yeni kayit olusturun' : 'Yeni bir gider kaydi olusturun' }}
           </p>
         </div>
 
@@ -116,7 +154,7 @@ onMounted(fetchMeta)
     </VCol>
 
     <VCol cols="12">
-      <VCard :loading="loadingMeta || loading">
+      <VCard :loading="loadingMeta || loadingCopy || loading">
         <VCardText>
           <VForm
             ref="formRef"
@@ -213,6 +251,14 @@ onMounted(fetchMeta)
                   :label="$t('common.description')"
                   rows="3"
                   :error-messages="fieldErrors.description ?? []"
+                />
+              </VCol>
+
+              <VCol cols="12" md="6">
+                <VTextField
+                  v-model="form.invoice_no"
+                  label="Fatura/Fiş No"
+                  :error-messages="fieldErrors.invoice_no ?? []"
                 />
               </VCol>
 

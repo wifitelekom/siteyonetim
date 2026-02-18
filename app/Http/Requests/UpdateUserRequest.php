@@ -18,6 +18,10 @@ class UpdateUserRequest extends FormRequest
             'tc_kimlik' => ['nullable', 'string', 'size:11', 'regex:/^\d{11}$/', Rule::unique('users')->ignore($userId)],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'in:admin,owner,tenant,vendor'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'birth_date' => ['nullable', 'date'],
+            'occupation' => ['nullable', 'string', 'max:100'],
+            'education' => ['nullable', 'string', 'in:ilkokul,ortaokul,lise,onlisans,lisans,yuksek_lisans,doktora'],
         ];
     }
 

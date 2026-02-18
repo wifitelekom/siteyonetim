@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\CollectPaymentRequest;
 use App\Http\Requests\StoreBulkChargeRequest;
 use App\Http\Requests\StoreChargeRequest;
+use App\Http\Requests\UpdateChargeRequest;
 use App\Http\Resources\ChargeResource;
 use App\Models\Account;
 use App\Models\Apartment;
@@ -28,7 +29,11 @@ class ChargeController extends Controller
     {
         $this->authorize('viewAny', Charge::class);
 
-        $query = Charge::query()->with(['apartment', 'account']);
+        $query = Charge::query()->with([
+            'apartment.owners:id,name',
+            'apartment.tenants:id,name',
+            'account',
+        ]);
 
         if ($request->filled('period')) {
             $query->where('period', $request->string('period'));
@@ -92,8 +97,7 @@ class ChargeController extends Controller
 
         $apartments = Apartment::query()
             ->where('is_active', true)
-            ->orderBy('block')
-            ->orderBy('number')
+            ->orderedForDisplay()
             ->get()
             ->map(fn (Apartment $apartment) => [
                 'id' => $apartment->id,
@@ -154,7 +158,8 @@ class ChargeController extends Controller
         $this->authorize('view', $charge);
 
         $charge->loadMissing([
-            'apartment',
+            'apartment.owners:id,name',
+            'apartment.tenants:id,name',
             'account',
             'creator',
             'receiptItems.receipt.cashAccount',
@@ -209,6 +214,23 @@ class ChargeController extends Controller
         ]);
     }
 
+    public function update(UpdateChargeRequest $request, Charge $charge): JsonResponse
+    {
+        $this->authorize('update', $charge);
+
+        $charge = $this->chargeService->updateCharge($charge, $request->validated());
+        $charge->loadMissing([
+            'apartment.owners:id,name',
+            'apartment.tenants:id,name',
+            'account',
+        ]);
+
+        return response()->json([
+            'message' => 'Tahakkuk guncellendi.',
+            'data' => new ChargeResource($charge),
+        ]);
+    }
+
     public function collect(CollectPaymentRequest $request, Charge $charge): JsonResponse
     {
         $this->authorize('collect', $charge);
@@ -229,7 +251,8 @@ class ChargeController extends Controller
 
         $charge->refresh();
         $charge->loadMissing([
-            'apartment',
+            'apartment.owners:id,name',
+            'apartment.tenants:id,name',
             'account',
             'receiptItems.receipt.cashAccount',
         ]);

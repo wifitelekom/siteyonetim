@@ -6,6 +6,7 @@ use App\Enums\ExpenseStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\MakePaymentRequest;
 use App\Http\Requests\StoreExpenseRequest;
+use App\Http\Requests\UpdateExpenseRequest;
 use App\Http\Resources\ExpenseResource;
 use App\Models\Account;
 use App\Models\CashAccount;
@@ -156,6 +157,7 @@ class ExpenseController extends Controller
         return response()->json([
             'data' => [
                 ...(new ExpenseResource($expense))->resolve(),
+                'created_at' => optional($expense->created_at)->toDateTimeString(),
                 'creator' => $expense->creator ? [
                     'id' => $expense->creator->id,
                     'name' => $expense->creator->name,
@@ -185,7 +187,37 @@ class ExpenseController extends Controller
                     ['value' => 'cash', 'label' => 'Nakit'],
                     ['value' => 'bank', 'label' => 'Banka'],
                 ],
+                'vendors' => Vendor::query()
+                    ->where('is_active', true)
+                    ->orderBy('name')
+                    ->get()
+                    ->map(fn (Vendor $vendor) => [
+                        'id' => $vendor->id,
+                        'label' => $vendor->name,
+                    ])->values(),
+                'accounts' => Account::query()
+                    ->where('type', 'expense')
+                    ->where('is_active', true)
+                    ->orderBy('code')
+                    ->get()
+                    ->map(fn (Account $account) => [
+                        'id' => $account->id,
+                        'label' => $account->full_name,
+                    ])->values(),
             ],
+        ]);
+    }
+
+    public function update(UpdateExpenseRequest $request, Expense $expense): JsonResponse
+    {
+        $this->authorize('update', $expense);
+
+        $expense = $this->expenseService->updateExpense($expense, $request->validated());
+        $expense->loadMissing(['vendor', 'account']);
+
+        return response()->json([
+            'message' => 'Gider guncellendi.',
+            'data' => new ExpenseResource($expense),
         ]);
     }
 

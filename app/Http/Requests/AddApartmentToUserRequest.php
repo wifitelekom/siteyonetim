@@ -23,6 +23,7 @@ class AddApartmentToUserRequest extends FormRequest
                     ->where(fn ($query) => $query->where('site_id', $siteId)->whereNull('deleted_at')),
             ],
             'relation_type' => ['required', 'in:owner,tenant'],
+            'family_role' => ['nullable', 'string', 'in:spouse,child,parent,sibling,other'],
             'start_date' => ['nullable', 'date'],
         ];
     }

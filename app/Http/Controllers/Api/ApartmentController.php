@@ -22,8 +22,11 @@ class ApartmentController extends Controller
             ->with([
                 'owners:id,name',
                 'tenants:id,name',
+                'group:id,name',
             ])
-            ->withCount('users');
+            ->withCount('users')
+            ->withSum('charges as total_charged', 'amount')
+            ->withSum('charges as total_paid', 'paid_amount');
 
         if ($request->filled('is_active')) {
             $query->where('is_active', $request->boolean('is_active'));
@@ -43,9 +46,7 @@ class ApartmentController extends Controller
         }
 
         $apartments = $query
-            ->orderBy('block')
-            ->orderBy('floor')
-            ->orderBy('number')
+            ->orderedForDisplay()
             ->paginate(20)
             ->withQueryString();
 
@@ -130,12 +131,22 @@ class ApartmentController extends Controller
             'data' => [
                 ...((new ApartmentResource($apartment))->resolve()),
                 'users' => $apartment->users->map(function (User $user) {
+                    $familyRoleLabels = [
+                        'spouse' => 'Es',
+                        'child' => 'Cocuk',
+                        'parent' => 'Anne/Baba',
+                        'sibling' => 'Kardes',
+                        'other' => 'Diger',
+                    ];
+
                     return [
                         'id' => $user->id,
                         'name' => $user->name,
                         'email' => $user->email,
                         'relation_type' => $user->pivot?->relation_type,
                         'relation_label' => $user->pivot?->relation_type === 'owner' ? 'Ev Sahibi' : 'Kiraci',
+                        'family_role' => $user->pivot?->family_role,
+                        'family_role_label' => $familyRoleLabels[$user->pivot?->family_role] ?? null,
                         'start_date' => $user->pivot?->start_date,
                         'end_date' => $user->pivot?->end_date,
                     ];
@@ -162,6 +173,13 @@ class ApartmentController extends Controller
                 'relation_types' => [
                     ['value' => 'owner', 'label' => 'Ev Sahibi'],
                     ['value' => 'tenant', 'label' => 'Kiraci'],
+                ],
+                'family_roles' => [
+                    ['value' => 'spouse', 'label' => 'Es'],
+                    ['value' => 'child', 'label' => 'Cocuk'],
+                    ['value' => 'parent', 'label' => 'Anne/Baba'],
+                    ['value' => 'sibling', 'label' => 'Kardes'],
+                    ['value' => 'other', 'label' => 'Diger'],
                 ],
             ],
         ]);
@@ -211,6 +229,7 @@ class ApartmentController extends Controller
         $apartment->users()->syncWithoutDetaching([
             $validated['user_id'] => [
                 'relation_type' => $validated['relation_type'],
+                'family_role' => $validated['family_role'] ?? null,
                 'start_date' => $validated['start_date'] ?? now()->toDateString(),
             ],
         ]);

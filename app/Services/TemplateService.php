@@ -91,6 +91,13 @@ class TemplateService
         $count = 0;
         $today = Carbon::today();
 
+        // Recurring expenses are generated on the first day of month.
+        if (!$today->isSameDay($today->copy()->startOfMonth())) {
+            Log::info('Tekrarlanan gider uretimi atlandi: ayin ilk gunu degil.');
+
+            return 0;
+        }
+
         $sites = Site::where('is_active', true)->get();
 
         foreach ($sites as $site) {

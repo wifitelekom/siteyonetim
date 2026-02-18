@@ -24,6 +24,7 @@ class Expense extends Model
         'amount',
         'paid_amount',
         'description',
+        'invoice_no',
         'created_by',
     ];
 
@@ -53,6 +54,11 @@ class Expense extends Model
     public function paymentItems(): HasMany
     {
         return $this->hasMany(PaymentItem::class);
+    }
+
+    public function expenseNotes(): HasMany
+    {
+        return $this->hasMany(ExpenseNote::class);
     }
 
     // Accessors

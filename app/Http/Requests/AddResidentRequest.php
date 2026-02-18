@@ -22,6 +22,7 @@ class AddResidentRequest extends FormRequest
                 Rule::exists('users', 'id')->where(fn ($query) => $query->where('site_id', $siteId)),
             ],
             'relation_type' => ['required', 'in:owner,tenant'],
+            'family_role' => ['nullable', 'string', 'in:spouse,child,parent,sibling,other'],
             'start_date' => ['nullable', 'date'],
         ];
     }

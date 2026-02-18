@@ -37,6 +37,12 @@ class ChargePolicy
             && $user->site_id === $charge->site_id;
     }
 
+    public function update(User $user, Charge $charge): bool
+    {
+        return $user->can('charges.create')
+            && $user->site_id === $charge->site_id;
+    }
+
     public function delete(User $user, Charge $charge): bool
     {
         return $user->can('charges.delete')

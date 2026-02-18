@@ -61,6 +61,16 @@ export default [
     icon: { icon: 'ri-store-2-line' },
   },
   {
+    title: 'Duyurular',
+    to: { path: '/announcements' },
+    icon: { icon: 'ri-megaphone-line' },
+  },
+  {
+    title: 'Destek Talepleri',
+    to: { path: '/support-tickets' },
+    icon: { icon: 'ri-customer-service-2-line' },
+  },
+  {
     title: 'navigation.siteSettings',
     icon: { icon: 'ri-settings-3-line' },
     children: [

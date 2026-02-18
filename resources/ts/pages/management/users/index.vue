@@ -51,6 +51,7 @@ const pagination = ref({
 const filters = ref({
   role: null as string | null,
   search: '',
+  archived: false,
 })
 
 const fetchMeta = async () => {
@@ -78,6 +79,7 @@ const fetchUsers = async (page = 1) => {
         page,
         role: filters.value.role || undefined,
         search: filters.value.search || undefined,
+        archived: filters.value.archived ? '1' : '0',
       },
     })
 
@@ -100,6 +102,7 @@ const resetFilters = async () => {
   filters.value = {
     role: null,
     search: '',
+    archived: false,
   }
 
   await fetchUsers(1)
@@ -169,12 +172,24 @@ onMounted(async () => {
 
             <VCol
               cols="12"
-              md="9"
+              md="6"
             >
               <VTextField
                 v-model="filters.search"
                 :label="$t('common.search')"
                 placeholder="Ad, e-posta, telefon, TC"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="3"
+              class="d-flex align-center"
+            >
+              <VCheckbox
+                v-model="filters.archived"
+                label="Arsivlenmisleri goster"
+                hide-details
               />
             </VCol>
 
@@ -217,6 +232,7 @@ onMounted(async () => {
           <thead>
             <tr>
               <th>Ad Soyad</th>
+              <th>E-posta</th>
               <th>{{ $t('common.contact') }}</th>
               <th>Rol</th>
               <th>{{ $t('common.apartment') }}</th>
@@ -231,12 +247,15 @@ onMounted(async () => {
               :key="row.id"
             >
               <td>
-                <div class="font-weight-medium">
+                <RouterLink
+                  :to="`/management/users/${row.id}`"
+                  class="font-weight-medium text-primary text-decoration-underline d-inline-block"
+                >
                   {{ row.name }}
-                </div>
-                <div class="text-caption text-medium-emphasis">
-                  {{ row.email || '-' }}
-                </div>
+                </RouterLink>
+              </td>
+              <td>
+                {{ row.email || '-' }}
               </td>
               <td>
                 <div>{{ row.phone || '-' }}</div>
@@ -255,6 +274,14 @@ onMounted(async () => {
               </td>
               <td>{{ row.apartment_count }}</td>
               <td class="text-right">
+                <VBtn
+                  icon
+                  size="small"
+                  variant="text"
+                  :to="`/management/users/${row.id}`"
+                >
+                  <VIcon icon="ri-eye-line" />
+                </VBtn>
                 <VBtn
                   icon
                   size="small"
@@ -278,7 +305,7 @@ onMounted(async () => {
             </tr>
             <tr v-if="users.length === 0">
               <td
-                colspan="5"
+                colspan="6"
                 class="text-center text-medium-emphasis py-6"
               >
                 {{ $t('common.noRecords') }}
@@ -301,4 +328,3 @@ onMounted(async () => {
     </VCol>
   </VRow>
 </template>
-

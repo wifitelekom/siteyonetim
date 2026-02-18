@@ -2,6 +2,7 @@
 import { getApiErrorMessage } from '@/utils/errorHandler'
 import type { PaginationMeta } from '@/types/api'
 import { $api } from '@/utils/api'
+import { formatCurrency } from '@/utils/formatters'
 import { isAbortError, useAbortOnUnmount } from '@/composables/useAbortOnUnmount'
 
 interface ApartmentItem {
@@ -16,6 +17,8 @@ interface ApartmentItem {
   resident_count: number
   current_owner: { id: number; name: string } | null
   current_tenant: { id: number; name: string } | null
+  group: { id: number; name: string } | null
+  balance: number
 }
 
 interface ApartmentsResponse {
@@ -79,6 +82,14 @@ const resetFilters = async () => {
   }
 
   await fetchApartments(1)
+}
+
+const normalizeBlock = (block: string | null) => block?.trim() ?? ''
+
+const hasVisibleBlock = (block: string | null) => {
+  const normalized = normalizeBlock(block)
+
+  return normalized !== '' && normalized !== '-' && normalized.toLowerCase() !== 'null'
 }
 
 const deleteApartment = async (apartment: ApartmentItem) => {
@@ -193,16 +204,15 @@ onMounted(() => fetchApartments(1))
           <thead>
             <tr>
               <th>{{ $t('common.apartment') }}</th>
-              <th>{{ $t('common.resident') }}</th>
+              <th>Grup</th>
+              <th>Kat Maliki</th>
+              <th>Kiraci</th>
               <th class="text-right">
-                m2
-              </th>
-              <th class="text-right">
-                {{ $t('common.landShare') }}
+                Bakiye
               </th>
               <th>{{ $t('common.status') }}</th>
               <th class="text-right">
-                İşlemler
+                Islemler
               </th>
             </tr>
           </thead>
@@ -212,24 +222,56 @@ onMounted(() => fetchApartments(1))
               :key="apartment.id"
             >
               <td>
-                <div class="font-weight-medium">
+                <RouterLink
+                  :to="`/management/apartments/${apartment.id}`"
+                  class="font-weight-medium text-primary text-decoration-underline d-inline-block"
+                >
                   {{ apartment.full_label }}
-                </div>
-                <div class="text-caption text-medium-emphasis">
-                  Blok {{ apartment.block || '-' }}, Kat {{ apartment.floor }}
+                </RouterLink>
+                <div
+                  v-if="hasVisibleBlock(apartment.block)"
+                  class="text-caption text-medium-emphasis"
+                >
+                  Blok {{ normalizeBlock(apartment.block) }}
                 </div>
               </td>
               <td>
-                <div>{{ apartment.current_tenant?.name || apartment.current_owner?.name || '-' }}</div>
-                <div class="text-caption text-medium-emphasis">
-                  {{ apartment.resident_count }} sakin
-                </div>
+                <VChip
+                  v-if="apartment.group"
+                  size="small"
+                  variant="tonal"
+                >
+                  {{ apartment.group.name }}
+                </VChip>
+                <span v-else class="text-medium-emphasis">-</span>
+              </td>
+              <td>
+                <RouterLink
+                  v-if="apartment.current_owner"
+                  :to="`/management/users/${apartment.current_owner.id}`"
+                  class="text-decoration-none"
+                >
+                  {{ apartment.current_owner.name }}
+                </RouterLink>
+                <span v-else class="text-medium-emphasis">-</span>
+              </td>
+              <td>
+                <RouterLink
+                  v-if="apartment.current_tenant"
+                  :to="`/management/users/${apartment.current_tenant.id}`"
+                  class="text-decoration-none"
+                >
+                  {{ apartment.current_tenant.name }}
+                </RouterLink>
+                <span v-else class="text-medium-emphasis">-</span>
               </td>
               <td class="text-right">
-                {{ apartment.m2 ?? '-' }}
-              </td>
-              <td class="text-right">
-                {{ apartment.arsa_payi ?? '-' }}
+                <span
+                  class="font-weight-medium"
+                  :class="apartment.balance > 0 ? 'text-error' : apartment.balance < 0 ? 'text-success' : ''"
+                >
+                  {{ formatCurrency(apartment.balance) }}
+                </span>
               </td>
               <td>
                 <VChip
@@ -272,7 +314,7 @@ onMounted(() => fetchApartments(1))
             </tr>
             <tr v-if="apartments.length === 0">
               <td
-                colspan="6"
+                colspan="7"
                 class="text-center text-medium-emphasis py-6"
               >
                 {{ $t('common.noRecords') }}
@@ -295,5 +337,3 @@ onMounted(() => fetchApartments(1))
     </VCol>
   </VRow>
 </template>
-
-

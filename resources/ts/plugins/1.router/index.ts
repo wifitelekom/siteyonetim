@@ -11,9 +11,15 @@ function recursiveLayouts(route: RouteRecordRaw): RouteRecordRaw {
   if (route.children) {
     for (let i = 0; i < route.children.length; i++)
       route.children[i] = recursiveLayouts(route.children[i])
-
-    return route
   }
+
+  const hasComponent = Boolean(
+    (route as RouteRecordRaw & { component?: unknown; components?: unknown }).component
+    || (route as RouteRecordRaw & { component?: unknown; components?: unknown }).components,
+  )
+
+  if (!hasComponent)
+    return route
 
   return setupLayouts([route])[0]
 }
@@ -33,6 +39,7 @@ const router = createRouter({
 
 router.beforeEach(async to => {
   const authSession = useAuthSession()
+
   await authSession.ensureSession()
 
   const isPublicRoute = Boolean(to.meta?.public)
@@ -45,8 +52,9 @@ router.beforeEach(async to => {
   }
 
   if (authSession.isAuthenticated.value && to.path === '/login') {
-    const redirectPath = typeof to.query.redirect === 'string' ? to.query.redirect : '/'
-    return redirectPath
+    return typeof to.query.redirect === 'string'
+      ? to.query.redirect
+      : '/'
   }
 
   if (
@@ -54,9 +62,8 @@ router.beforeEach(async to => {
     && authSession.hasRole('super-admin')
     && !authSession.site.value
     && !to.path.startsWith('/super/sites')
-  ) {
+  )
     return '/super/sites'
-  }
 
   if (authSession.isAuthenticated.value && !canAccessPath(to.path, authSession))
     return '/'

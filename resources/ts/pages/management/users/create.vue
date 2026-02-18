@@ -7,6 +7,8 @@ import { emailRule, exactLengthRule, matchRule, maxLengthRule, minLengthRule, re
 interface UsersMetaResponse {
   data: {
     roles: Array<{ value: 'admin' | 'owner' | 'tenant' | 'vendor'; label: string }>
+    apartments: Array<{ id: number; label: string }>
+    relation_types: Array<{ value: 'owner' | 'tenant'; label: string }>
   }
 }
 
@@ -18,6 +20,8 @@ const loading = ref(false)
 const errorMessage = ref('')
 const fieldErrors = ref<Record<string, string[]>>({})
 const roleOptions = ref<Array<{ value: 'admin' | 'owner' | 'tenant' | 'vendor'; label: string }>>([])
+const apartmentOptions = ref<Array<{ id: number; label: string }>>([])
+const relationTypes = ref<Array<{ value: 'owner' | 'tenant'; label: string }>>([])
 
 const form = ref({
   name: '',
@@ -27,6 +31,9 @@ const form = ref({
   password: '',
   password_confirmation: '',
   role: 'owner' as 'admin' | 'owner' | 'tenant' | 'vendor',
+  apartment_id: null as number | null,
+  relation_type: 'owner' as 'owner' | 'tenant',
+  start_date: new Date().toISOString().slice(0, 10),
 })
 const formRef = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null)
 
@@ -43,6 +50,14 @@ const tcKimlikRules = [
 const passwordRules = [requiredRule(), minLengthRule(8)]
 const passwordConfirmationRules = [requiredRule(), matchRule(() => form.value.password, 'Şifreler eşleşmiyor.')]
 const roleRules = [requiredRule()]
+const relationRules = [
+  (value: unknown) => {
+    if (form.value.apartment_id == null)
+      return true
+
+    return requiredRule()(value)
+  },
+]
 
 const fetchMeta = async () => {
   loadingMeta.value = true
@@ -50,8 +65,12 @@ const fetchMeta = async () => {
   try {
     const response = await withAbort(signal => $api<UsersMetaResponse>('/users/meta', { signal }))
     roleOptions.value = response.data.roles
+    apartmentOptions.value = response.data.apartments
+    relationTypes.value = response.data.relation_types
     if (roleOptions.value.length > 0 && !roleOptions.value.some(role => role.value === form.value.role))
       form.value.role = roleOptions.value[0].value
+    if (relationTypes.value.length > 0 && !relationTypes.value.some(type => type.value === form.value.relation_type))
+      form.value.relation_type = relationTypes.value[0].value
   }
   catch (error) {
     if (isAbortError(error)) return
@@ -82,6 +101,9 @@ const submit = async () => {
         password: form.value.password,
         password_confirmation: form.value.password_confirmation,
         role: form.value.role,
+        apartment_id: form.value.apartment_id,
+        relation_type: form.value.apartment_id == null ? undefined : form.value.relation_type,
+        start_date: form.value.apartment_id == null ? undefined : (form.value.start_date || null),
       },
       signal,
     }))
@@ -230,6 +252,50 @@ onMounted(fetchMeta)
                   label="Rol"
                   :rules="roleRules"
                   :error-messages="fieldErrors.role ?? []"
+                />
+              </VCol>
+
+              <VCol
+                cols="12"
+                md="4"
+              >
+                <VSelect
+                  v-model="form.apartment_id"
+                  :items="apartmentOptions"
+                  item-title="label"
+                  item-value="id"
+                  :label="$t('common.apartment')"
+                  clearable
+                  :error-messages="fieldErrors.apartment_id ?? []"
+                />
+              </VCol>
+
+              <VCol
+                cols="12"
+                md="4"
+              >
+                <VSelect
+                  v-model="form.relation_type"
+                  :items="relationTypes"
+                  item-title="label"
+                  item-value="value"
+                  :label="$t('common.type')"
+                  :rules="relationRules"
+                  :disabled="form.apartment_id == null"
+                  :error-messages="fieldErrors.relation_type ?? []"
+                />
+              </VCol>
+
+              <VCol
+                cols="12"
+                md="4"
+              >
+                <VTextField
+                  v-model="form.start_date"
+                  type="date"
+                  :label="$t('common.startDate')"
+                  :disabled="form.apartment_id == null"
+                  :error-messages="fieldErrors.start_date ?? []"
                 />
               </VCol>
 

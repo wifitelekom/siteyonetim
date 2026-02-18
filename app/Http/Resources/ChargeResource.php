@@ -9,6 +9,21 @@ class ChargeResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
+        $debtor = null;
+        $debtorType = null;
+        if ($this->relationLoaded('apartment') && $this->apartment) {
+            $tenant = $this->apartment->relationLoaded('tenants') ? $this->apartment->tenants->first() : null;
+            $owner = $this->apartment->relationLoaded('owners') ? $this->apartment->owners->first() : null;
+
+            if ($tenant) {
+                $debtor = $tenant;
+                $debtorType = 'tenant';
+            } elseif ($owner) {
+                $debtor = $owner;
+                $debtorType = 'owner';
+            }
+        }
+
         return [
             'id' => $this->id,
             'period' => $this->period,
@@ -27,6 +42,12 @@ class ChargeResource extends JsonResource
                 'id' => $this->account->id,
                 'name' => $this->account->full_name,
             ] : null),
+            'debtor' => $debtor ? [
+                'id' => $debtor->id,
+                'name' => $debtor->name,
+                'type' => $debtorType,
+                'type_label' => $debtorType === 'owner' ? 'Ev Sahibi' : 'Kiracı',
+            ] : null,
         ];
     }
 }

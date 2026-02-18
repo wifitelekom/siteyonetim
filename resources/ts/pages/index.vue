@@ -50,6 +50,16 @@ interface DashboardSummary {
     expense: number
   }> | null
   collectionRate: number | null
+  apartmentStats: {
+    total: number
+    active: number
+    total_residents: number
+  } | null
+  dailyCashFlow: Array<{
+    date: string
+    income: number
+    expense: number
+  }> | null
 }
 
 interface DashboardResponse {
@@ -199,6 +209,50 @@ onMounted(fetchDashboard)
         </VCol>
       </VRow>
 
+      <!-- Row 1b: Apartment Stats (admin only) -->
+      <VRow
+        v-if="summary.apartmentStats"
+        class="mb-2"
+      >
+        <VCol
+          cols="12"
+          sm="4"
+        >
+          <DashboardStatCard
+            title="Toplam Daire"
+            :value="`${summary.apartmentStats.total}`"
+            :subtitle="`${summary.apartmentStats.active} aktif`"
+            icon="ri-home-line"
+            color="info"
+          />
+        </VCol>
+        <VCol
+          cols="12"
+          sm="4"
+        >
+          <DashboardStatCard
+            title="Toplam Sakin"
+            :value="`${summary.apartmentStats.total_residents}`"
+            subtitle="Kayitli sakin sayisi"
+            icon="ri-group-line"
+            color="secondary"
+          />
+        </VCol>
+        <VCol
+          cols="12"
+          sm="4"
+        >
+          <DashboardStatCard
+            v-if="summary.collectionRate != null"
+            title="Tahsilat Orani"
+            :value="`%${summary.collectionRate}`"
+            subtitle="Bu ay icin"
+            icon="ri-percent-line"
+            :color="summary.collectionRate >= 70 ? 'success' : summary.collectionRate >= 40 ? 'warning' : 'error'"
+          />
+        </VCol>
+      </VRow>
+
       <!-- Row 2: Charts (admin only) -->
       <VRow
         v-if="summary.monthlyTrend && summary.collectionRate != null"
@@ -216,6 +270,16 @@ onMounted(fetchDashboard)
           lg="4"
         >
           <DashboardCollectionRate :rate="summary.collectionRate" />
+        </VCol>
+      </VRow>
+
+      <!-- Row 2b: 30-Day Daily Cash Flow (admin only) -->
+      <VRow
+        v-if="summary.dailyCashFlow"
+        class="mb-2"
+      >
+        <VCol cols="12">
+          <DashboardDailyCashFlow :data="summary.dailyCashFlow" />
         </VCol>
       </VRow>
 

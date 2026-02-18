@@ -11,6 +11,10 @@ interface UserDetailResponse {
     email: string | null
     phone: string | null
     tc_kimlik: string | null
+    address: string | null
+    birth_date: string | null
+    occupation: string | null
+    education: string | null
     role: 'admin' | 'owner' | 'tenant' | 'vendor' | null
     role_label: string
     roles: string[]
@@ -40,6 +44,7 @@ const saving = ref(false)
 const deleting = ref(false)
 const addingApartment = ref(false)
 const removingApartmentId = ref<number | null>(null)
+const updatingApartmentId = ref<number | null>(null)
 
 const errorMessage = ref('')
 const fieldErrors = ref<Record<string, string[]>>({})
@@ -57,11 +62,26 @@ const apartments = ref<Array<{
   end_date: string | null
 }>>([])
 
+const educationOptions = [
+  { value: '', label: 'Seciniz' },
+  { value: 'ilkokul', label: 'Ilkokul' },
+  { value: 'ortaokul', label: 'Ortaokul' },
+  { value: 'lise', label: 'Lise' },
+  { value: 'onlisans', label: 'On Lisans' },
+  { value: 'lisans', label: 'Lisans' },
+  { value: 'yuksek_lisans', label: 'Yuksek Lisans' },
+  { value: 'doktora', label: 'Doktora' },
+]
+
 const form = ref({
   name: '',
   email: '',
   phone: '',
   tc_kimlik: '',
+  address: '',
+  birth_date: '',
+  occupation: '',
+  education: '',
   password: '',
   password_confirmation: '',
   role: 'owner' as 'admin' | 'owner' | 'tenant' | 'vendor',
@@ -124,6 +144,10 @@ const fetchDetail = async () => {
       email: payload.email ?? '',
       phone: payload.phone ?? '',
       tc_kimlik: payload.tc_kimlik ?? '',
+      address: payload.address ?? '',
+      birth_date: payload.birth_date ?? '',
+      occupation: payload.occupation ?? '',
+      education: payload.education ?? '',
       password: '',
       password_confirmation: '',
       role: (payload.role ?? 'owner') as 'admin' | 'owner' | 'tenant' | 'vendor',
@@ -159,6 +183,10 @@ const submit = async () => {
     email: form.value.email,
     phone: form.value.phone || null,
     tc_kimlik: form.value.tc_kimlik || null,
+    address: form.value.address || null,
+    birth_date: form.value.birth_date || null,
+    occupation: form.value.occupation || null,
+    education: form.value.education || null,
     role: form.value.role,
   }
 
@@ -244,6 +272,32 @@ const removeApartment = async (apartmentId: number) => {
   }
   finally {
     removingApartmentId.value = null
+  }
+}
+
+const updateApartmentRelation = async (apartment: {
+  id: number
+  relation_type: 'owner' | 'tenant'
+  start_date: string | null
+}) => {
+  updatingApartmentId.value = apartment.id
+  errorMessage.value = ''
+
+  try {
+    await $api(`/users/${userId.value}/apartments/${apartment.id}`, {
+      method: 'PUT',
+      body: {
+        relation_type: apartment.relation_type,
+        start_date: apartment.start_date || null,
+      },
+    })
+    await fetchDetail()
+  }
+  catch (error) {
+    errorMessage.value = getApiErrorMessage(error, 'Daire iliskisi guncellenemedi.')
+  }
+  finally {
+    updatingApartmentId.value = null
   }
 }
 
@@ -346,6 +400,48 @@ onMounted(fetchDetail)
                   maxlength="11"
                   :rules="tcKimlikRules"
                   :error-messages="fieldErrors.tc_kimlik ?? []"
+                />
+              </VCol>
+              <VCol cols="12">
+                <VTextarea
+                  v-model="form.address"
+                  label="Adres"
+                  rows="2"
+                  :error-messages="fieldErrors.address ?? []"
+                />
+              </VCol>
+              <VCol
+                cols="12"
+                md="4"
+              >
+                <VTextField
+                  v-model="form.birth_date"
+                  type="date"
+                  label="Dogum Tarihi"
+                  :error-messages="fieldErrors.birth_date ?? []"
+                />
+              </VCol>
+              <VCol
+                cols="12"
+                md="4"
+              >
+                <VTextField
+                  v-model="form.occupation"
+                  label="Meslek"
+                  :error-messages="fieldErrors.occupation ?? []"
+                />
+              </VCol>
+              <VCol
+                cols="12"
+                md="4"
+              >
+                <VSelect
+                  v-model="form.education"
+                  :items="educationOptions"
+                  item-title="label"
+                  item-value="value"
+                  label="Ogrenim Durumu"
+                  :error-messages="fieldErrors.education ?? []"
                 />
               </VCol>
               <VCol
@@ -489,13 +585,15 @@ onMounted(fetchDetail)
             >
               <td>{{ apartment.label }}</td>
               <td>
-                <VChip
-                  size="small"
-                  :color="apartment.relation_type === 'owner' ? 'primary' : 'warning'"
-                  variant="tonal"
-                >
-                  {{ apartment.relation_label }}
-                </VChip>
+                <VSelect
+                  v-model="apartment.relation_type"
+                  :items="relationTypes"
+                  item-title="label"
+                  item-value="value"
+                  density="compact"
+                  hide-details
+                  :disabled="updatingApartmentId === apartment.id || removingApartmentId === apartment.id"
+                />
               </td>
               <td>{{ formatDate(apartment.start_date) }}</td>
               <td class="text-right">
@@ -503,9 +601,20 @@ onMounted(fetchDetail)
                   icon
                   size="small"
                   variant="text"
+                  color="primary"
+                  :loading="updatingApartmentId === apartment.id"
+                  :disabled="updatingApartmentId === apartment.id || removingApartmentId === apartment.id"
+                  @click="updateApartmentRelation(apartment)"
+                >
+                  <VIcon icon="ri-save-line" />
+                </VBtn>
+                <VBtn
+                  icon
+                  size="small"
+                  variant="text"
                   color="error"
                   :loading="removingApartmentId === apartment.id"
-                  :disabled="removingApartmentId === apartment.id"
+                  :disabled="removingApartmentId === apartment.id || updatingApartmentId === apartment.id"
                   @click="removeApartment(apartment.id)"
                 >
                   <VIcon icon="ri-close-line" />
@@ -526,4 +635,3 @@ onMounted(fetchDetail)
     </VCol>
   </VRow>
 </template>
-

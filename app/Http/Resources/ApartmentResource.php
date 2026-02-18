@@ -9,8 +9,12 @@ class ApartmentResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
-        $owner = $this->whenLoaded('owners', fn () => $this->owners->first());
-        $tenant = $this->whenLoaded('tenants', fn () => $this->tenants->first());
+        $owner = $this->relationLoaded('owners') ? $this->owners->first() : null;
+        $tenant = $this->relationLoaded('tenants') ? $this->tenants->first() : null;
+
+        $group = $this->relationLoaded('group') ? $this->group : null;
+        $totalCharged = (float) ($this->total_charged ?? 0);
+        $totalPaid = (float) ($this->total_paid ?? 0);
 
         return [
             'id' => $this->id,
@@ -30,6 +34,11 @@ class ApartmentResource extends JsonResource
                 'id' => $tenant->id,
                 'name' => $tenant->name,
             ] : null,
+            'group' => $group ? [
+                'id' => $group->id,
+                'name' => $group->name,
+            ] : null,
+            'balance' => round($totalCharged - $totalPaid, 2),
         ];
     }
 }

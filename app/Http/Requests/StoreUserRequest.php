@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreUserRequest extends FormRequest
 {
@@ -8,6 +9,8 @@ class StoreUserRequest extends FormRequest
 
     public function rules(): array
     {
+        $siteId = $this->user()->site_id;
+
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
@@ -15,6 +18,17 @@ class StoreUserRequest extends FormRequest
             'tc_kimlik' => ['nullable', 'string', 'size:11', 'regex:/^\d{11}$/', 'unique:users,tc_kimlik'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => ['required', 'in:admin,owner,tenant,vendor'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'birth_date' => ['nullable', 'date'],
+            'occupation' => ['nullable', 'string', 'max:100'],
+            'education' => ['nullable', 'string', 'in:ilkokul,ortaokul,lise,onlisans,lisans,yuksek_lisans,doktora'],
+            'apartment_id' => [
+                'nullable',
+                Rule::exists('apartments', 'id')
+                    ->where(fn ($query) => $query->where('site_id', $siteId)->whereNull('deleted_at')),
+            ],
+            'relation_type' => ['required_with:apartment_id', 'in:owner,tenant'],
+            'start_date' => ['nullable', 'date'],
         ];
     }
 

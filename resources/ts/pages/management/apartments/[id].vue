@@ -3,8 +3,7 @@ import { getApiErrorMessage, getApiFieldErrors } from '@/utils/errorHandler'
 import { $api } from '@/utils/api'
 import { formatCurrency, formatDateTr as formatDate } from '@/utils/formatters'
 import { chargeStatusColor as statusColor, chargeStatusLabel as statusLabel } from '@/utils/statusHelpers'
-import { requiredRule } from '@/utils/validators'
-import { isAbortError, useAbortOnUnmount } from '@/composables/useAbortOnUnmount'
+import { positiveNumberRule, requiredRule } from '@/utils/validators'
 
 interface ApartmentDetail {
   id: number
@@ -21,6 +20,8 @@ interface ApartmentDetail {
     email: string | null
     relation_type: 'owner' | 'tenant'
     relation_label: string
+    family_role: string | null
+    family_role_label: string | null
     start_date: string | null
     end_date: string | null
   }>
@@ -42,12 +43,12 @@ interface ApartmentShowResponse {
   meta: {
     available_users: Array<{ id: number; name: string; email: string | null }>
     relation_types: Array<{ value: 'owner' | 'tenant'; label: string }>
+    family_roles: Array<{ value: string; label: string }>
   }
 }
 
 const route = useRoute()
 const apartmentId = computed(() => Number((route.params as Record<string, unknown>).id))
-const { withAbort } = useAbortOnUnmount()
 
 const loading = ref(false)
 const submittingResident = ref(false)
@@ -58,16 +59,55 @@ const residentErrors = ref<Record<string, string[]>>({})
 const detail = ref<ApartmentDetail | null>(null)
 const availableUsers = ref<Array<{ id: number; name: string; email: string | null }>>([])
 const relationTypes = ref<Array<{ value: 'owner' | 'tenant'; label: string }>>([])
+const familyRoles = ref<Array<{ value: string; label: string }>>([])
 
 const residentForm = ref({
   user_id: null as number | null,
   relation_type: 'owner' as 'owner' | 'tenant',
+  family_role: null as string | null,
   start_date: new Date().toISOString().slice(0, 10),
 })
 const residentFormRef = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null)
 
 const residentUserRules = [requiredRule()]
 const residentRelationRules = [requiredRule()]
+
+const editDialog = ref(false)
+const editing = ref(false)
+const editErrors = ref<Record<string, string[]>>({})
+const editForm = ref({
+  block: '',
+  floor: null as number | null,
+  number: '',
+  m2: null as number | null,
+  arsa_payi: null as number | null,
+  is_active: true,
+})
+const editFormRef = ref<{ validate: () => Promise<{ valid: boolean }> } | null>(null)
+
+const editFloorRules = [
+  requiredRule(),
+  (value: unknown) => Number.isInteger(Number(value)) ? true : 'Kat bilgisi tam sayi olmalidir.',
+]
+const editNumberRules = [requiredRule()]
+const editM2Rules = [
+  (value: unknown) => {
+    if (value === null || value === undefined || value === '')
+      return true
+
+    return positiveNumberRule()(value)
+  },
+]
+const editArsaPayiRules = [
+  (value: unknown) => {
+    if (value === null || value === undefined || value === '')
+      return true
+
+    const parsed = Number(value)
+
+    return Number.isFinite(parsed) && parsed >= 0 ? true : 'Sifir veya daha buyuk bir deger giriniz.'
+  },
+]
 
 const fetchDetail = async () => {
   loading.value = true
@@ -78,12 +118,13 @@ const fetchDetail = async () => {
     detail.value = response.data
     availableUsers.value = response.meta.available_users
     relationTypes.value = response.meta.relation_types
+    familyRoles.value = response.meta.family_roles
 
     if (!relationTypes.value.some(type => type.value === residentForm.value.relation_type))
       residentForm.value.relation_type = relationTypes.value[0]?.value ?? 'owner'
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Daire detayı alınamadı.')
+    errorMessage.value = getApiErrorMessage(error, 'Daire detayi alinamadi.')
   }
   finally {
     loading.value = false
@@ -105,11 +146,13 @@ const addResident = async () => {
       body: {
         user_id: residentForm.value.user_id,
         relation_type: residentForm.value.relation_type,
+        family_role: residentForm.value.family_role || null,
         start_date: residentForm.value.start_date || null,
       },
     })
 
     residentForm.value.user_id = null
+    residentForm.value.family_role = null
     await fetchDetail()
   }
   catch (error) {
@@ -130,10 +173,60 @@ const removeResident = async (userId: number) => {
     await fetchDetail()
   }
   catch (error) {
-    errorMessage.value = getApiErrorMessage(error, 'Sakin kaldırılamadı.')
+    errorMessage.value = getApiErrorMessage(error, 'Sakin kaldirilamadi.')
   }
   finally {
     removingResidentId.value = null
+  }
+}
+
+const openEditDialog = () => {
+  if (!detail.value)
+    return
+
+  editErrors.value = {}
+  editForm.value = {
+    block: detail.value.block ?? '',
+    floor: detail.value.floor,
+    number: detail.value.number,
+    m2: detail.value.m2,
+    arsa_payi: detail.value.arsa_payi,
+    is_active: detail.value.is_active,
+  }
+  editDialog.value = true
+}
+
+const submitEdit = async () => {
+  const validation = await editFormRef.value?.validate()
+  if (!validation?.valid)
+    return
+
+  editing.value = true
+  editErrors.value = {}
+  errorMessage.value = ''
+
+  try {
+    await $api(`/apartments/${apartmentId.value}`, {
+      method: 'PUT',
+      body: {
+        block: editForm.value.block || null,
+        floor: editForm.value.floor,
+        number: editForm.value.number,
+        m2: editForm.value.m2,
+        arsa_payi: editForm.value.arsa_payi,
+        is_active: editForm.value.is_active,
+      },
+    })
+
+    editDialog.value = false
+    await fetchDetail()
+  }
+  catch (error) {
+    errorMessage.value = getApiErrorMessage(error, 'Daire guncellenemedi.')
+    editErrors.value = getApiFieldErrors(error)
+  }
+  finally {
+    editing.value = false
   }
 }
 
@@ -162,9 +255,9 @@ onMounted(fetchDetail)
           </VBtn>
           <VBtn
             color="primary"
-            :to="`/management/apartments/${apartmentId}/edit`"
+            @click="openEditDialog"
           >
-            Düzenle
+            Duzenle
           </VBtn>
         </div>
       </div>
@@ -241,7 +334,7 @@ onMounted(fetchDetail)
       cols="12"
       md="8"
     >
-        <VCard :loading="loading">
+      <VCard :loading="loading">
         <VCardItem title="Sakinler" />
         <VCardText>
           <VForm
@@ -251,7 +344,7 @@ onMounted(fetchDetail)
             <VRow>
               <VCol
                 cols="12"
-                md="5"
+                md="4"
               >
                 <VSelect
                   v-model="residentForm.user_id"
@@ -265,7 +358,7 @@ onMounted(fetchDetail)
               </VCol>
               <VCol
                 cols="12"
-                md="3"
+                md="2"
               >
                 <VSelect
                   v-model="residentForm.relation_type"
@@ -275,6 +368,20 @@ onMounted(fetchDetail)
                   :label="$t('common.type')"
                   :rules="residentRelationRules"
                   :error-messages="residentErrors.relation_type ?? []"
+                />
+              </VCol>
+              <VCol
+                cols="12"
+                md="2"
+              >
+                <VSelect
+                  v-model="residentForm.family_role"
+                  :items="familyRoles"
+                  item-title="label"
+                  item-value="value"
+                  label="Aile Rolu"
+                  clearable
+                  :error-messages="residentErrors.family_role ?? []"
                 />
               </VCol>
               <VCol
@@ -312,6 +419,7 @@ onMounted(fetchDetail)
             <tr>
               <th>Ad</th>
               <th>{{ $t('common.type') }}</th>
+              <th>Aile Rolu</th>
               <th>{{ $t('common.startDate') }}</th>
               <th class="text-right">
                 Islem
@@ -340,6 +448,7 @@ onMounted(fetchDetail)
                   {{ resident.relation_label }}
                 </VChip>
               </td>
+              <td>{{ resident.family_role_label || '-' }}</td>
               <td>{{ formatDate(resident.start_date) }}</td>
               <td class="text-right">
                 <VBtn
@@ -357,10 +466,10 @@ onMounted(fetchDetail)
             </tr>
             <tr v-if="(detail?.users ?? []).length === 0">
               <td
-                colspan="4"
+                colspan="5"
                 class="text-center text-medium-emphasis py-6"
               >
-                Sakin kaydı yok.
+                Sakin kaydi yok.
               </td>
             </tr>
           </tbody>
@@ -426,7 +535,7 @@ onMounted(fetchDetail)
                 colspan="6"
                 class="text-center text-medium-emphasis py-6"
               >
-                Tahakkuk kaydı yok.
+                Tahakkuk kaydi yok.
               </td>
             </tr>
           </tbody>
@@ -434,5 +543,113 @@ onMounted(fetchDetail)
       </VCard>
     </VCol>
   </VRow>
-</template>
 
+  <VDialog
+    v-model="editDialog"
+    max-width="760"
+  >
+    <VCard title="Daire Duzenle">
+      <VCardText>
+        <VForm
+          ref="editFormRef"
+          @submit.prevent="submitEdit"
+        >
+          <VRow>
+            <VCol
+              cols="12"
+              md="4"
+            >
+              <VTextField
+                v-model="editForm.block"
+                label="Blok"
+                :error-messages="editErrors.block ?? []"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="4"
+            >
+              <VTextField
+                v-model="editForm.floor"
+                type="number"
+                label="Kat"
+                :rules="editFloorRules"
+                :error-messages="editErrors.floor ?? []"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="4"
+            >
+              <VTextField
+                v-model="editForm.number"
+                :label="$t('common.apartmentNo')"
+                :rules="editNumberRules"
+                :error-messages="editErrors.number ?? []"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="editForm.m2"
+                type="number"
+                min="1"
+                step="0.01"
+                label="m2"
+                :rules="editM2Rules"
+                :error-messages="editErrors.m2 ?? []"
+              />
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <VTextField
+                v-model="editForm.arsa_payi"
+                type="number"
+                min="0"
+                step="0.000001"
+                :label="$t('common.landShare')"
+                :rules="editArsaPayiRules"
+                :error-messages="editErrors.arsa_payi ?? []"
+              />
+            </VCol>
+
+            <VCol cols="12">
+              <VSwitch
+                v-model="editForm.is_active"
+                :label="$t('common.active')"
+                color="primary"
+              />
+            </VCol>
+          </VRow>
+        </VForm>
+      </VCardText>
+
+      <VCardActions class="px-6 pb-4">
+        <VSpacer />
+        <VBtn
+          variant="outlined"
+          :disabled="editing"
+          @click="editDialog = false"
+        >
+          Iptal
+        </VBtn>
+        <VBtn
+          color="primary"
+          :loading="editing"
+          :disabled="editing"
+          @click="submitEdit"
+        >
+          Kaydet
+        </VBtn>
+      </VCardActions>
+    </VCard>
+  </VDialog>
+</template>

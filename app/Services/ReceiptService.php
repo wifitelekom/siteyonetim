@@ -65,6 +65,7 @@ class ReceiptService
             }
 
             $receipt->update(['total_amount' => $actualTotal]);
+            DashboardService::clearCache((int) $siteId);
 
             return $receipt;
         });

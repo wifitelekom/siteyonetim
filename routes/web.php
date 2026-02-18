@@ -6,13 +6,22 @@ use App\Http\Controllers\Api\ApartmentController as ApiApartmentController;
 use App\Http\Controllers\Api\CashAccountController as ApiCashAccountController;
 use App\Http\Controllers\Api\ChargeController as ApiChargeController;
 use App\Http\Controllers\Api\DashboardController as ApiDashboardController;
+use App\Http\Controllers\Api\DocumentController as ApiDocumentController;
+use App\Http\Controllers\Api\NoteController as ApiNoteController;
+use App\Http\Controllers\Api\ReminderController as ApiReminderController;
+use App\Http\Controllers\Api\ResidentController as ApiResidentController;
 use App\Http\Controllers\Api\ExpenseController as ApiExpenseController;
+use App\Http\Controllers\Api\ExpenseNoteController as ApiExpenseNoteController;
 use App\Http\Controllers\Api\PaymentController as ApiPaymentController;
 use App\Http\Controllers\Api\ProfileController as ApiProfileController;
 use App\Http\Controllers\Api\ReportController as ApiReportController;
 use App\Http\Controllers\Api\ReportPdfController as ApiReportPdfController;
 use App\Http\Controllers\Api\ReceiptController as ApiReceiptController;
 use App\Http\Controllers\Api\SiteSettingsController as ApiSiteSettingsController;
+use App\Http\Controllers\Api\CategoryController as ApiCategoryController;
+use App\Http\Controllers\Api\ApartmentGroupController as ApiApartmentGroupController;
+use App\Http\Controllers\Api\AnnouncementController as ApiAnnouncementController;
+use App\Http\Controllers\Api\SupportTicketController as ApiSupportTicketController;
 use App\Http\Controllers\Api\SuperSiteController as ApiSuperSiteController;
 use App\Http\Controllers\Api\TemplateAidatController as ApiTemplateAidatController;
 use App\Http\Controllers\Api\TemplateExpenseController as ApiTemplateExpenseController;
@@ -35,6 +44,7 @@ Route::prefix('api/v1')->middleware(['auth', 'site.scope', 'throttle:api'])->gro
     Route::post('/charges', [ApiChargeController::class, 'store'])->name('api.charges.store');
     Route::post('/charges/bulk', [ApiChargeController::class, 'storeBulk'])->name('api.charges.store-bulk');
     Route::get('/charges/{charge}', [ApiChargeController::class, 'show'])->name('api.charges.show');
+    Route::put('/charges/{charge}', [ApiChargeController::class, 'update'])->name('api.charges.update');
     Route::post('/charges/{charge}/collect', [ApiChargeController::class, 'collect'])->name('api.charges.collect');
     Route::delete('/charges/{charge}', [ApiChargeController::class, 'destroy'])->name('api.charges.destroy');
 
@@ -42,8 +52,13 @@ Route::prefix('api/v1')->middleware(['auth', 'site.scope', 'throttle:api'])->gro
     Route::get('/expenses/meta', [ApiExpenseController::class, 'meta'])->name('api.expenses.meta');
     Route::post('/expenses', [ApiExpenseController::class, 'store'])->name('api.expenses.store');
     Route::get('/expenses/{expense}', [ApiExpenseController::class, 'show'])->name('api.expenses.show');
+    Route::put('/expenses/{expense}', [ApiExpenseController::class, 'update'])->name('api.expenses.update');
     Route::post('/expenses/{expense}/pay', [ApiExpenseController::class, 'pay'])->name('api.expenses.pay');
     Route::delete('/expenses/{expense}', [ApiExpenseController::class, 'destroy'])->name('api.expenses.destroy');
+
+    Route::get('/expenses/{expense}/notes', [ApiExpenseNoteController::class, 'index'])->name('api.expenses.notes.index');
+    Route::post('/expenses/{expense}/notes', [ApiExpenseNoteController::class, 'store'])->name('api.expenses.notes.store');
+    Route::delete('/expenses/{expense}/notes/{expenseNote}', [ApiExpenseNoteController::class, 'destroy'])->name('api.expenses.notes.destroy');
 
     Route::get('/receipts', [ApiReceiptController::class, 'index'])->name('api.receipts.index');
     Route::get('/receipts/meta', [ApiReceiptController::class, 'meta'])->name('api.receipts.meta');
@@ -82,7 +97,29 @@ Route::prefix('api/v1')->middleware(['auth', 'site.scope', 'throttle:api'])->gro
     Route::put('/users/{user}', [ApiUserController::class, 'update'])->name('api.users.update');
     Route::delete('/users/{user}', [ApiUserController::class, 'destroy'])->name('api.users.destroy');
     Route::post('/users/{user}/apartments', [ApiUserController::class, 'addApartment'])->name('api.users.add-apartment');
+    Route::put('/users/{user}/apartments/{apartment}', [ApiUserController::class, 'updateApartment'])->name('api.users.update-apartment');
     Route::delete('/users/{user}/apartments/{apartment}', [ApiUserController::class, 'removeApartment'])->name('api.users.remove-apartment');
+
+    Route::get('/residents/{user}', [ApiResidentController::class, 'show'])->name('api.residents.show');
+    Route::get('/residents/{user}/statement', [ApiResidentController::class, 'statement'])->name('api.residents.statement');
+    Route::post('/residents/{user}/opening-balance', [ApiResidentController::class, 'openingBalance'])->name('api.residents.opening-balance');
+    Route::post('/residents/transfer-debt', [ApiResidentController::class, 'transferDebt'])->name('api.residents.transfer-debt');
+    Route::put('/residents/{user}/archive', [ApiResidentController::class, 'archive'])->name('api.residents.archive');
+    Route::put('/residents/{user}/unarchive', [ApiResidentController::class, 'unarchive'])->name('api.residents.unarchive');
+
+    Route::get('/residents/{user}/notes', [ApiNoteController::class, 'index'])->name('api.residents.notes.index');
+    Route::post('/residents/{user}/notes', [ApiNoteController::class, 'store'])->name('api.residents.notes.store');
+    Route::delete('/residents/{user}/notes/{note}', [ApiNoteController::class, 'destroy'])->name('api.residents.notes.destroy');
+
+    Route::get('/residents/{user}/documents', [ApiDocumentController::class, 'index'])->name('api.residents.documents.index');
+    Route::post('/residents/{user}/documents', [ApiDocumentController::class, 'store'])->name('api.residents.documents.store');
+    Route::get('/residents/{user}/documents/{document}/download', [ApiDocumentController::class, 'download'])->name('api.residents.documents.download');
+    Route::delete('/residents/{user}/documents/{document}', [ApiDocumentController::class, 'destroy'])->name('api.residents.documents.destroy');
+
+    Route::get('/residents/{user}/reminders', [ApiReminderController::class, 'index'])->name('api.residents.reminders.index');
+    Route::post('/residents/{user}/reminders', [ApiReminderController::class, 'store'])->name('api.residents.reminders.store');
+    Route::put('/residents/{user}/reminders/{reminder}', [ApiReminderController::class, 'update'])->name('api.residents.reminders.update');
+    Route::delete('/residents/{user}/reminders/{reminder}', [ApiReminderController::class, 'destroy'])->name('api.residents.reminders.destroy');
 
     Route::get('/vendors', [ApiVendorController::class, 'index'])->name('api.vendors.index');
     Route::post('/vendors', [ApiVendorController::class, 'store'])->name('api.vendors.store');
@@ -92,6 +129,32 @@ Route::prefix('api/v1')->middleware(['auth', 'site.scope', 'throttle:api'])->gro
 
     Route::get('/site-settings', [ApiSiteSettingsController::class, 'show'])->name('api.site-settings.show');
     Route::put('/site-settings', [ApiSiteSettingsController::class, 'update'])->name('api.site-settings.update');
+    Route::put('/site-settings/regional', [ApiSiteSettingsController::class, 'regional'])->name('api.site-settings.regional');
+    Route::get('/site-settings/managers', [ApiSiteSettingsController::class, 'managers'])->name('api.site-settings.managers');
+    Route::get('/site-settings/permissions', [ApiSiteSettingsController::class, 'permissions'])->name('api.site-settings.permissions');
+    Route::put('/site-settings/permissions', [ApiSiteSettingsController::class, 'updatePermissions'])->name('api.site-settings.permissions.update');
+
+    Route::get('/categories', [ApiCategoryController::class, 'index'])->name('api.categories.index');
+    Route::post('/categories', [ApiCategoryController::class, 'store'])->name('api.categories.store');
+    Route::delete('/categories/{category}', [ApiCategoryController::class, 'destroy'])->name('api.categories.destroy');
+
+    Route::get('/apartment-groups', [ApiApartmentGroupController::class, 'index'])->name('api.apartment-groups.index');
+    Route::post('/apartment-groups', [ApiApartmentGroupController::class, 'store'])->name('api.apartment-groups.store');
+    Route::put('/apartment-groups/{apartmentGroup}', [ApiApartmentGroupController::class, 'update'])->name('api.apartment-groups.update');
+    Route::delete('/apartment-groups/{apartmentGroup}', [ApiApartmentGroupController::class, 'destroy'])->name('api.apartment-groups.destroy');
+
+    Route::get('/announcements', [ApiAnnouncementController::class, 'index'])->name('api.announcements.index');
+    Route::post('/announcements', [ApiAnnouncementController::class, 'store'])->name('api.announcements.store');
+    Route::get('/announcements/{announcement}', [ApiAnnouncementController::class, 'show'])->name('api.announcements.show');
+    Route::put('/announcements/{announcement}', [ApiAnnouncementController::class, 'update'])->name('api.announcements.update');
+    Route::delete('/announcements/{announcement}', [ApiAnnouncementController::class, 'destroy'])->name('api.announcements.destroy');
+
+    Route::get('/support-tickets', [ApiSupportTicketController::class, 'index'])->name('api.support-tickets.index');
+    Route::post('/support-tickets', [ApiSupportTicketController::class, 'store'])->name('api.support-tickets.store');
+    Route::get('/support-tickets/{supportTicket}', [ApiSupportTicketController::class, 'show'])->name('api.support-tickets.show');
+    Route::post('/support-tickets/{supportTicket}/reply', [ApiSupportTicketController::class, 'reply'])->name('api.support-tickets.reply');
+    Route::put('/support-tickets/{supportTicket}/status', [ApiSupportTicketController::class, 'updateStatus'])->name('api.support-tickets.status');
+    Route::delete('/support-tickets/{supportTicket}', [ApiSupportTicketController::class, 'destroy'])->name('api.support-tickets.destroy');
 
     Route::get('/templates/aidat', [ApiTemplateAidatController::class, 'index'])->name('api.templates.aidat.index');
     Route::get('/templates/aidat/meta', [ApiTemplateAidatController::class, 'meta'])->name('api.templates.aidat.meta');
@@ -115,6 +178,9 @@ Route::prefix('api/v1')->middleware(['auth', 'site.scope', 'throttle:api'])->gro
     Route::get('/reports/debt-status', [ApiReportController::class, 'debtStatus'])->name('api.reports.debt-status');
     Route::get('/reports/receivable-status', [ApiReportController::class, 'receivableStatus'])->name('api.reports.receivable-status');
     Route::get('/reports/charge-list', [ApiReportController::class, 'chargeList'])->name('api.reports.charge-list');
+    Route::get('/reports/apartment-list', [ApiReportController::class, 'apartmentList'])->name('api.reports.apartment-list');
+    Route::get('/reports/household-info', [ApiReportController::class, 'householdInfo'])->name('api.reports.household-info');
+    Route::get('/reports/balance-sheet', [ApiReportController::class, 'balanceSheet'])->name('api.reports.balance-sheet');
     Route::get('/reports/cash-statement/pdf', [ApiReportPdfController::class, 'cashStatement'])->name('api.reports.cash-statement.pdf');
     Route::get('/reports/account-statement/pdf', [ApiReportPdfController::class, 'accountStatement'])->name('api.reports.account-statement.pdf');
     Route::get('/reports/collections/pdf', [ApiReportPdfController::class, 'collections'])->name('api.reports.collections.pdf');

@@ -67,8 +67,7 @@ class ReceiptController extends Controller
 
         $apartments = Apartment::query()
             ->where('is_active', true)
-            ->orderBy('block')
-            ->orderBy('number')
+            ->orderedForDisplay()
             ->get()
             ->map(fn (Apartment $apartment) => [
                 'id' => $apartment->id,

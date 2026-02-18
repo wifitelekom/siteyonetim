@@ -17,6 +17,7 @@ interface ChargeDetail {
   status: 'open' | 'paid' | 'overdue'
   charge_type: 'aidat' | 'other'
   apartment: { id: number; label: string } | null
+  debtor: { id: number; name: string; type: 'owner' | 'tenant'; type_label: string } | null
   account: { id: number; name: string } | null
   creator: { id: number; name: string } | null
   receipt_items: Array<{
@@ -95,7 +96,15 @@ const fetchDetail = async () => {
 
 const openCollectDialog = () => {
   collectErrors.value = {}
+  if (cashAccounts.value.length === 0) {
+    errorMessage.value = 'Tahsilat için önce bir kasa/banka hesabı ekleyin.'
+
+    return
+  }
+
   collectForm.value.amount = detail.value?.remaining ?? null
+  if (collectForm.value.cash_account_id == null)
+    collectForm.value.cash_account_id = cashAccounts.value[0]?.id ?? null
   collectDialog.value = true
 }
 
@@ -162,8 +171,9 @@ onMounted(fetchDetail)
           <h4 class="text-h4 mb-1">
             {{ $t('pages.charges.detailTitle') }}
           </h4>
-          <p class="text-medium-emphasis mb-0">
-            {{ detail?.apartment?.label ?? '-' }}
+          <p class="text-medium-emphasis mb-0">{{ detail?.apartment?.label ?? '-' }}</p>
+          <p class="text-body-2 text-medium-emphasis mb-0">
+            {{ detail?.debtor ? `${detail.debtor.type_label}: ${detail.debtor.name}` : 'Borçlu: -' }}
           </p>
         </div>
 
@@ -172,7 +182,7 @@ onMounted(fetchDetail)
             variant="outlined"
             to="/charges"
           >
-            Listeye Don
+            Listeye Dön
           </VBtn>
 
           <VBtn
@@ -264,6 +274,36 @@ onMounted(fetchDetail)
               >
                 {{ statusLabel(detail.status) }}
               </VChip>
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <div class="text-caption text-medium-emphasis">
+                Borçlu Daire
+              </div>
+              <div class="font-weight-medium">
+                {{ detail.apartment?.label ?? '-' }}
+              </div>
+            </VCol>
+
+            <VCol
+              cols="12"
+              md="6"
+            >
+              <div class="text-caption text-medium-emphasis">
+                Borçlu
+              </div>
+              <div class="font-weight-medium">
+                {{ detail.debtor?.name ?? '-' }}
+                <span
+                  v-if="detail.debtor?.type_label"
+                  class="text-medium-emphasis"
+                >
+                  ({{ detail.debtor.type_label }})
+                </span>
+              </div>
             </VCol>
 
             <VCol
@@ -432,7 +472,7 @@ onMounted(fetchDetail)
           </VBtn>
           <VBtn
             color="primary"
-            type="submit"
+            @click="submitCollect"
             :loading="collecting"
             :disabled="collecting"
           >
@@ -443,4 +483,3 @@ onMounted(fetchDetail)
     </VDialog>
   </VRow>
 </template>
-

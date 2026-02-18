@@ -26,6 +26,7 @@ class StoreExpenseRequest extends FormRequest
             'due_date' => ['required', 'date'],
             'amount' => ['required', 'numeric', 'min:0.01'],
             'description' => ['nullable', 'string', 'max:500'],
+            'invoice_no' => ['nullable', 'string', 'max:50'],
         ];
     }
 }

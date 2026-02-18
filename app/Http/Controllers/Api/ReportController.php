@@ -4,8 +4,11 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Account;
+use App\Models\Apartment;
 use App\Models\CashAccount;
 use App\Models\Charge;
+use App\Models\Expense;
+use App\Models\Receipt;
 use App\Services\ReportService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -287,6 +290,143 @@ class ReportController extends Controller
                         'status' => $charge->status?->value ?? null,
                     ];
                 })->values(),
+            ],
+        ]);
+    }
+
+    public function apartmentList(Request $request): JsonResponse
+    {
+        $this->authorizeView($request);
+
+        $apartments = Apartment::query()
+            ->with(['owners:id,name', 'tenants:id,name', 'group:id,name'])
+            ->withCount('users')
+            ->withSum('charges as total_charged', 'amount')
+            ->withSum('charges as total_paid', 'paid_amount')
+            ->orderedForDisplay()
+            ->get();
+
+        return response()->json([
+            'data' => [
+                'apartments' => $apartments->map(fn (Apartment $a) => [
+                    'full_label' => $a->full_label,
+                    'block' => $a->block,
+                    'floor' => $a->floor,
+                    'number' => $a->number,
+                    'm2' => $a->m2 ? (float) $a->m2 : null,
+                    'arsa_payi' => $a->arsa_payi ? (float) $a->arsa_payi : null,
+                    'group' => $a->group?->name,
+                    'owner' => $a->owners->first()?->name,
+                    'tenant' => $a->tenants->first()?->name,
+                    'resident_count' => (int) ($a->users_count ?? 0),
+                    'balance' => round((float) ($a->total_charged ?? 0) - (float) ($a->total_paid ?? 0), 2),
+                    'is_active' => (bool) $a->is_active,
+                ])->values(),
+                'total_count' => $apartments->count(),
+                'active_count' => $apartments->where('is_active', true)->count(),
+            ],
+        ]);
+    }
+
+    public function householdInfo(Request $request): JsonResponse
+    {
+        $this->authorizeView($request);
+
+        $apartments = Apartment::query()
+            ->with(['users' => fn ($q) => $q->orderBy('name')])
+            ->where('is_active', true)
+            ->orderedForDisplay()
+            ->get();
+
+        return response()->json([
+            'data' => [
+                'apartments' => $apartments->map(fn (Apartment $a) => [
+                    'full_label' => $a->full_label,
+                    'residents' => $a->users->map(fn ($user) => [
+                        'name' => $user->name,
+                        'phone' => $user->phone,
+                        'email' => $user->email,
+                        'relation_type' => $user->pivot?->relation_type,
+                        'relation_label' => $user->pivot?->relation_type === 'owner' ? 'Ev Sahibi' : 'Kiraci',
+                        'family_role' => $user->pivot?->family_role,
+                    ])->values(),
+                ])->values(),
+            ],
+        ]);
+    }
+
+    public function balanceSheet(Request $request): JsonResponse
+    {
+        $this->authorizeView($request);
+
+        $validated = $request->validate([
+            'from' => ['required', 'date'],
+            'to' => ['required', 'date', 'after_or_equal:from'],
+        ]);
+
+        $from = Carbon::parse($validated['from']);
+        $to = Carbon::parse($validated['to']);
+        $siteId = $request->user()->site_id;
+
+        $totalCharges = Charge::query()
+            ->where('site_id', $siteId)
+            ->whereBetween('due_date', [$from, $to])
+            ->sum('amount');
+
+        $totalCollected = Receipt::query()
+            ->where('site_id', $siteId)
+            ->whereBetween('paid_at', [$from, $to])
+            ->sum('total_amount');
+
+        $totalExpenses = Expense::query()
+            ->where('site_id', $siteId)
+            ->whereBetween('expense_date', [$from, $to])
+            ->sum('amount');
+
+        $totalPaidExpenses = Expense::query()
+            ->where('site_id', $siteId)
+            ->whereBetween('expense_date', [$from, $to])
+            ->sum('paid_amount');
+
+        $incomeByAccount = Charge::query()
+            ->where('charges.site_id', $siteId)
+            ->whereBetween('due_date', [$from, $to])
+            ->join('accounts', 'charges.account_id', '=', 'accounts.id')
+            ->selectRaw('accounts.name as account_name, SUM(charges.amount) as total')
+            ->groupBy('accounts.name')
+            ->orderByDesc('total')
+            ->get();
+
+        $expenseByAccount = Expense::query()
+            ->where('expenses.site_id', $siteId)
+            ->whereBetween('expense_date', [$from, $to])
+            ->join('accounts', 'expenses.account_id', '=', 'accounts.id')
+            ->selectRaw('accounts.name as account_name, SUM(expenses.amount) as total')
+            ->groupBy('accounts.name')
+            ->orderByDesc('total')
+            ->get();
+
+        return response()->json([
+            'data' => [
+                'from' => $from->toDateString(),
+                'to' => $to->toDateString(),
+                'income' => [
+                    'total_charges' => (float) $totalCharges,
+                    'total_collected' => (float) $totalCollected,
+                    'by_account' => $incomeByAccount->map(fn ($row) => [
+                        'account' => $row->account_name,
+                        'total' => (float) $row->total,
+                    ])->values(),
+                ],
+                'expense' => [
+                    'total_expenses' => (float) $totalExpenses,
+                    'total_paid' => (float) $totalPaidExpenses,
+                    'by_account' => $expenseByAccount->map(fn ($row) => [
+                        'account' => $row->account_name,
+                        'total' => (float) $row->total,
+                    ])->values(),
+                ],
+                'net' => round((float) $totalCollected - (float) $totalPaidExpenses, 2),
             ],
         ]);
     }

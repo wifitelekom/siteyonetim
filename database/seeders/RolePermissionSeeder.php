@@ -18,7 +18,7 @@ class RolePermissionSeeder extends Seeder
             // Charges
             'charges.view', 'charges.create', 'charges.collect', 'charges.delete',
             // Expenses
-            'expenses.view', 'expenses.create', 'expenses.pay', 'expenses.delete',
+            'expenses.view', 'expenses.create', 'expenses.update', 'expenses.pay', 'expenses.delete',
             // Accounts
             'accounts.view', 'accounts.manage',
             // Cash Accounts

@@ -129,6 +129,24 @@ onMounted(fetchMeta)
             <ReportChargeList />
           </VExpansionPanelText>
         </VExpansionPanel>
+
+        <VExpansionPanel title="Bilanco">
+          <VExpansionPanelText>
+            <ReportBalanceSheet />
+          </VExpansionPanelText>
+        </VExpansionPanel>
+
+        <VExpansionPanel title="Daire Listesi">
+          <VExpansionPanelText>
+            <ReportApartmentList />
+          </VExpansionPanelText>
+        </VExpansionPanel>
+
+        <VExpansionPanel title="Hane Bilgileri">
+          <VExpansionPanelText>
+            <ReportHouseholdInfo />
+          </VExpansionPanelText>
+        </VExpansionPanel>
       </VExpansionPanels>
     </VCol>
   </VRow>

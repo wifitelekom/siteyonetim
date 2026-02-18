@@ -10,14 +10,22 @@ use App\Models\Expense;
 use App\Models\Payment;
 use App\Models\Receipt;
 use App\Models\User;
+use App\Models\Document;
+use App\Models\Note;
+use App\Models\Reminder;
+use App\Models\ExpenseNote;
 use App\Models\Vendor;
 use App\Policies\AccountPolicy;
 use App\Policies\ApartmentPolicy;
 use App\Policies\CashAccountPolicy;
 use App\Policies\ChargePolicy;
+use App\Policies\DocumentPolicy;
+use App\Policies\ExpenseNotePolicy;
 use App\Policies\ExpensePolicy;
+use App\Policies\NotePolicy;
 use App\Policies\PaymentPolicy;
 use App\Policies\ReceiptPolicy;
+use App\Policies\ReminderPolicy;
 use App\Policies\UserPolicy;
 use App\Policies\VendorPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -56,5 +64,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(CashAccount::class, CashAccountPolicy::class);
         Gate::policy(Vendor::class, VendorPolicy::class);
         Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Note::class, NotePolicy::class);
+        Gate::policy(Document::class, DocumentPolicy::class);
+        Gate::policy(Reminder::class, ReminderPolicy::class);
+        Gate::policy(ExpenseNote::class, ExpenseNotePolicy::class);
     }
 }

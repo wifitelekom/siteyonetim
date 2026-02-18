@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\Apartment;
 use App\Models\CashAccount;
 use App\Models\Charge;
 use App\Models\Expense;
@@ -15,6 +16,8 @@ use Illuminate\Support\Facades\Cache;
 
 class DashboardService
 {
+    private const CACHE_TTL_MINUTES = 5;
+
     public function getSummary(?User $user = null): array
     {
         $user ??= auth()->user();
@@ -23,9 +26,10 @@ class DashboardService
             throw new \RuntimeException('Authenticated user is required.');
         }
 
-        $cacheKey = "dashboard_summary_{$user->site_id}_{$user->id}";
+        $version = (int) Cache::get(self::siteVersionKey((int) $user->site_id), 1);
+        $cacheKey = "dashboard_summary_{$user->site_id}_{$user->id}_v{$version}";
 
-        return Cache::remember($cacheKey, now()->addMinutes(5), function () use ($user) {
+        return Cache::remember($cacheKey, now()->addMinutes(self::CACHE_TTL_MINUTES), function () use ($user) {
             return $this->buildSummary($user);
         });
     }
@@ -35,9 +39,18 @@ class DashboardService
      */
     public static function clearCache(int $siteId): void
     {
-        // Clear cache for all users of this site by using a tag or pattern.
-        // Since file/database cache doesn't support tags, we use a site-level key.
-        Cache::forget("dashboard_summary_{$siteId}_admin");
+        if ($siteId <= 0) {
+            return;
+        }
+
+        $versionKey = self::siteVersionKey($siteId);
+        $currentVersion = (int) Cache::get($versionKey, 1);
+        Cache::forever($versionKey, $currentVersion + 1);
+    }
+
+    private static function siteVersionKey(int $siteId): string
+    {
+        return "dashboard_summary_version_{$siteId}";
     }
 
     private function buildSummary(User $user): array
@@ -281,6 +294,41 @@ class DashboardService
             $timeline = $timeline->sortBy('date')->values();
         }
 
+        // Admin-only: apartment/resident stats, daily cash flow
+        $apartmentStats = null;
+        $dailyCashFlow = null;
+
+        if ($isAdmin) {
+            $apartmentStats = [
+                'total' => Apartment::count(),
+                'active' => Apartment::where('is_active', true)->count(),
+                'total_residents' => \DB::table('apartment_user')->count(),
+            ];
+
+            // 30-day daily cash flow
+            $thirtyDaysAgo = Carbon::today()->subDays(29)->toDateString();
+            $dailyIncome = Receipt::selectRaw("DATE(paid_at) as day, SUM(total_amount) as total")
+                ->whereBetween('paid_at', [$thirtyDaysAgo, $today])
+                ->groupByRaw("DATE(paid_at)")
+                ->pluck('total', 'day');
+
+            $dailyExpense = Payment::selectRaw("DATE(paid_at) as day, SUM(total_amount) as total")
+                ->whereBetween('paid_at', [$thirtyDaysAgo, $today])
+                ->groupByRaw("DATE(paid_at)")
+                ->pluck('total', 'day');
+
+            $dailyCashFlow = [];
+            for ($i = 29; $i >= 0; $i--) {
+                $day = Carbon::today()->subDays($i);
+                $dayKey = $day->toDateString();
+                $dailyCashFlow[] = [
+                    'date' => $day->format('d.m'),
+                    'income' => (float) ($dailyIncome[$dayKey] ?? 0),
+                    'expense' => (float) ($dailyExpense[$dayKey] ?? 0),
+                ];
+            }
+        }
+
         return [
             'receivables' => $receivables,
             'payables' => $payables,
@@ -295,6 +343,8 @@ class DashboardService
             'timeline' => $timeline,
             'monthlyTrend' => $monthlyTrend,
             'collectionRate' => $collectionRate,
+            'apartmentStats' => $apartmentStats,
+            'dailyCashFlow' => $dailyCashFlow,
         ];
     }
 }

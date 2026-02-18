@@ -5,6 +5,10 @@ interface SessionAccess {
 
 const startsWithPath = (path: string, prefix: string) => path === prefix || path.startsWith(`${prefix}/`)
 
+const isUserCreateOrEditPath = (path: string) =>
+  path === '/management/users/create'
+  || /^\/management\/users\/[^/]+\/edit$/.test(path)
+
 export const canAccessPath = (path: string, session: SessionAccess): boolean => {
   if (path === '/' || path === '/profile/password')
     return true
@@ -36,6 +40,9 @@ export const canAccessPath = (path: string, session: SessionAccess): boolean => 
   if (startsWithPath(path, '/management/apartments'))
     return session.can('apartments.view')
 
+  if (isUserCreateOrEditPath(path))
+    return session.can('users.manage')
+
   if (startsWithPath(path, '/management/users'))
     return session.can('users.view')
 
@@ -50,4 +57,3 @@ export const canAccessPath = (path: string, session: SessionAccess): boolean => 
 
   return true
 }
-

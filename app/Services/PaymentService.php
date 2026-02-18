@@ -61,6 +61,7 @@ class PaymentService
             }
 
             $payment->update(['total_amount' => $actualTotal]);
+            DashboardService::clearCache((int) $siteId);
 
             return $payment;
         });

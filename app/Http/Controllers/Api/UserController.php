@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AddApartmentToUserRequest;
 use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserApartmentRequest;
 use App\Http\Requests\UpdateUserRequest;
 use App\Http\Resources\UserResource;
 use App\Models\Apartment;
@@ -22,6 +23,12 @@ class UserController extends Controller
         $query = User::query()
             ->with(['roles:id,name'])
             ->withCount('apartments');
+
+        if ($request->has('archived')) {
+            $request->boolean('archived') ? $query->archived() : $query->active();
+        } else {
+            $query->active();
+        }
 
         if ($request->filled('role')) {
             $role = (string) $request->string('role');
@@ -78,6 +85,10 @@ class UserController extends Controller
                     ['value' => 'vendor', 'label' => 'Tedarikci'],
                 ],
                 'apartments' => $apartments,
+                'relation_types' => [
+                    ['value' => 'owner', 'label' => 'Ev Sahibi'],
+                    ['value' => 'tenant', 'label' => 'Kiraci'],
+                ],
                 'can_manage_roles' => $request->user()->can('users.manage'),
             ],
         ]);
@@ -102,9 +113,23 @@ class UserController extends Controller
             'tc_kimlik' => $validated['tc_kimlik'] ?? null,
             'password' => Hash::make($validated['password']),
             'site_id' => $request->user()->site_id,
+            'address' => $validated['address'] ?? null,
+            'birth_date' => $validated['birth_date'] ?? null,
+            'occupation' => $validated['occupation'] ?? null,
+            'education' => $validated['education'] ?? null,
         ]);
 
         $user->assignRole($validated['role']);
+
+        if (!empty($validated['apartment_id'])) {
+            $user->apartments()->syncWithoutDetaching([
+                (int) $validated['apartment_id'] => [
+                    'relation_type' => $validated['relation_type'],
+                    'start_date' => $validated['start_date'] ?? now()->toDateString(),
+                ],
+            ]);
+        }
+
         $user->loadMissing(['roles:id,name']);
         $user->loadCount('apartments');
 
@@ -170,6 +195,10 @@ class UserController extends Controller
             'email' => $validated['email'],
             'phone' => $validated['phone'] ?? null,
             'tc_kimlik' => $validated['tc_kimlik'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'birth_date' => $validated['birth_date'] ?? null,
+            'occupation' => $validated['occupation'] ?? null,
+            'education' => $validated['education'] ?? null,
         ];
 
         if (!empty($validated['password'])) {
@@ -210,15 +239,56 @@ class UserController extends Controller
 
         $validated = $request->validated();
 
-        $user->apartments()->syncWithoutDetaching([
-            $validated['apartment_id'] => [
-                'relation_type' => $validated['relation_type'],
-                'start_date' => $validated['start_date'] ?? now()->toDateString(),
-            ],
-        ]);
+        $pivotData = [
+            'relation_type' => $validated['relation_type'],
+            'family_role' => $validated['family_role'] ?? null,
+            'start_date' => $validated['start_date'] ?? now()->toDateString(),
+        ];
+
+        $alreadyLinked = $user->apartments()
+            ->where('apartments.id', $validated['apartment_id'])
+            ->exists();
+
+        if ($alreadyLinked) {
+            $user->apartments()->updateExistingPivot($validated['apartment_id'], $pivotData);
+        } else {
+            $user->apartments()->syncWithoutDetaching([
+                $validated['apartment_id'] => $pivotData,
+            ]);
+        }
 
         return response()->json([
             'message' => 'Daire iliskisi eklendi.',
+        ]);
+    }
+
+    public function updateApartment(UpdateUserApartmentRequest $request, User $user, Apartment $apartment): JsonResponse
+    {
+        $this->authorize('update', $user);
+
+        if ($apartment->site_id !== $request->user()->site_id) {
+            abort(404);
+        }
+
+        $isLinked = $user->apartments()
+            ->where('apartments.id', $apartment->id)
+            ->exists();
+
+        if (!$isLinked) {
+            return response()->json([
+                'message' => 'Kullanici bu daire ile iliskili degil.',
+            ], 422);
+        }
+
+        $validated = $request->validated();
+
+        $user->apartments()->updateExistingPivot($apartment->id, [
+            'relation_type' => $validated['relation_type'],
+            'start_date' => $validated['start_date'] ?? now()->toDateString(),
+        ]);
+
+        return response()->json([
+            'message' => 'Daire iliskisi guncellendi.',
         ]);
     }
 

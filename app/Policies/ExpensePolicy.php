@@ -37,6 +37,12 @@ class ExpensePolicy
             && $user->site_id === $expense->site_id;
     }
 
+    public function update(User $user, Expense $expense): bool
+    {
+        return ($user->can('expenses.update') || $user->can('expenses.create'))
+            && $user->site_id === $expense->site_id;
+    }
+
     public function delete(User $user, Expense $expense): bool
     {
         return $user->can('expenses.delete')
